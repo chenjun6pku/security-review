@@ -14,27 +14,28 @@ exactly one profile per output. A minimal complete example is in
 
 ## 高危（N） / High (N)
 
-| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
-|---|---|---|
-| SR-0001 | | |
+| 编号 / ID | 类型 / Type | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|---|
+| SR-0001 | | | |
 
 ## 中危（N） / Medium (N)
 
-| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
-|---|---|---|
-| SR-0002 | | |
+| 编号 / ID | 类型 / Type | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|---|
+| SR-0002 | | | |
 
 ## 低危 / 信息（N） / Low / Informational (N)
 
-| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
-|---|---|---|
-| SR-0004 | | |
+| 编号 / ID | 类型 / Type | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|---|
+| SR-0004 | | | |
 
 ## 问题详情 / Issue details
 
 ### 问题 1（SR-0001）：<title> / Issue 1 (SR-0001): <title>
 
 - 危险等级 / Risk level:
+- 问题类型 / Issue type:
 - 置信度 / Confidence:
 - 触发条件 / Trigger:
 - 原因 / Root cause:

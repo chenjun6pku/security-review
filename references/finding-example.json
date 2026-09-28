@@ -5,6 +5,7 @@
   "confidence": "High",
   "behavior": "reachable_security_behavior",
   "primary_domain": "SR-SC",
+  "issue_type": "supply-chain",
   "lifecycle": ["install", "runtime"],
   "tags": ["install-time", "execution", "network", "supply-chain", "integrity"],
   "risk": "Installing the package runs a hook that downloads a script over plain HTTP and executes it with the installer's privileges, with no signature, digest, or source pinning.",

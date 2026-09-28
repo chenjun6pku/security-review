@@ -24,6 +24,7 @@
     "confidence": {"type": "string", "enum": ["Confirmed", "High", "Medium", "Low"]},
     "behavior": {"type": "string", "enum": ["benign_or_expected_capability", "security_relevant_capability", "reachable_security_behavior", "suspicious_behavior", "confirmed_malicious_behavior"]},
     "primary_domain": {"type": "string", "enum": ["SR-SC", "SR-LC", "SR-BL", "SR-HP", "SR-ID", "SR-DA", "SR-RT", "SR-NW", "SR-AS", "SR-AG"]},
+    "issue_type": {"type": "string", "enum": ["memory-safety", "injection", "authn-authz", "privilege-escalation", "credential-exposure", "data-privacy", "information-disclosure", "denial-of-service", "backdoor-covert-channel", "supply-chain", "lifecycle-behavior", "hardening-config", "crypto-protocol", "compliance-license", "agentic-risk"]},
     "lifecycle": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
     "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "risk": {"type": "string", "minLength": 1},

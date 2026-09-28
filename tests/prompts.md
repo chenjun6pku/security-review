@@ -104,8 +104,11 @@ Expected:
   with no unlocalized headings or labels mixed in;
 - the summary tables cover every issue exactly once and the declared counts match
   the tables and cards;
-- every card carries the nine fields (危险等级/置信度/触发条件/原因/危害/性质/证据/修复/验证)
-  in roughly 8-12 lines, without repeating the summary or adding extra sections;
+- every issue carries exactly one type from the vocabulary in `references/taxonomy.md`,
+  the summary 类型 cell matches the card, and 后门与隐蔽通道 is only used with
+  suspicious or confirmed-malicious evidence;
+- every card carries the ten fields (危险等级/问题类型/置信度/触发条件/原因/危害/性质/证据/修复/验证)
+  in roughly 8-14 lines, without repeating the summary or adding extra sections;
 - the closing block states coverage, negative checks, and a limitation;
 - `python scripts/validate_report.py <file>` passes.
 

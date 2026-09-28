@@ -7,15 +7,15 @@
 
 ## High (1)
 
-| ID | Issue | Possible consequence |
-|---|---|---|
-| SR-0001 | Install hook downloads and executes a remote script | Any install runs attacker-controlled code with the installer's privileges (remote, no user interaction) |
+| ID | Type | Issue | Possible consequence |
+|---|---|---|---|
+| SR-0001 | supply-chain | Install hook downloads and executes a remote script | Any install runs attacker-controlled code with the installer's privileges (remote, no user interaction) |
 
 ## Medium (1)
 
-| ID | Issue | Possible consequence |
-|---|---|---|
-| SR-0002 | Agent-facing prompt injection in the README | A reviewing agent may execute the install script and expose credentials (requires an agent to read the file) |
+| ID | Type | Issue | Possible consequence |
+|---|---|---|---|
+| SR-0002 | agentic-risk | Agent-facing prompt injection in the README | A reviewing agent may execute the install script and expose credentials (requires an agent to read the file) |
 
 ## Low / Informational (0)
 
@@ -26,6 +26,7 @@ None.
 ### Issue 1 (SR-0001): Installation hook executes downloaded code
 
 - Risk level: High
+- Issue type: supply-chain
 - Confidence: High
 - Trigger: a normal `npm install`, including as a transitive dependency
 - Root cause: the `postinstall` hook builds a shell command that downloads a runtime-configurable URL and executes it without integrity verification
@@ -38,6 +39,7 @@ None.
 ### Issue 2 (SR-0002): Prompt injection in repository text
 
 - Risk level: Medium
+- Issue type: agentic-risk
 - Confidence: Medium
 - Trigger: an AI agent reads the README while reviewing or installing
 - Root cause: an HTML comment instructs the reader to run the install script and print `.env`

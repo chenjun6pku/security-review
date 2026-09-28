@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.5 — 2026-09-28
+
+- Added a reader-facing "问题类型" (issue type) field with a closed vocabulary of 15 types in `references/taxonomy.md` (memory safety, injection, authn/authz, privilege escalation, credential exposure, data/privacy, information disclosure, denial of service, backdoor/covert channel, supply chain, lifecycle behavior, hardening/config, crypto/protocol, compliance/license, agentic risk), each mapped to typical primary domains.
+- Summary tables gained a type column (`编号 | 类型 | 问题 | 可能导致`) and every detail card gained a `问题类型` line; `finding-schema.json` accepts an optional `issue_type` value using the canonical English tokens.
+- `backdoor-covert-channel` is restricted to issues whose behavior classification is suspicious or confirmed-malicious, or whose evidence shows covert control; a capability alone is typed by its effect.
+- `validate_report.py` now checks the type vocabulary, requires one type per issue, verifies the summary type cell matches the card, and enforces the backdoor threshold.
+- Updated both examples, added the type assertions to validation scenario 11, and removed the stale "nine fields" wording in favor of the current field set.
+
 ## 1.1.4 — 2026-09-28
 
 - Output target is now explicit: the issue list is delivered in the conversation by default, and the skill never creates files inside the reviewed repository or its workspace.

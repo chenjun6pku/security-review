@@ -39,6 +39,7 @@ PROFILES = {
         ],
         "fields": {
             "level": "危险等级",
+            "type": "问题类型",
             "confidence": "置信度",
             "trigger": "触发条件",
             "cause": "原因",
@@ -49,6 +50,24 @@ PROFILES = {
             "verification": "验证",
         },
         "levels": {"高": "High", "中": "Medium", "低": "Low", "信息": "Informational"},
+        "types": {
+            "内存安全": "memory-safety",
+            "注入与动态执行": "injection",
+            "认证与授权缺陷": "authn-authz",
+            "权限提升": "privilege-escalation",
+            "凭据泄露": "credential-exposure",
+            "隐私与数据泄露": "data-privacy",
+            "信息泄露": "information-disclosure",
+            "拒绝服务": "denial-of-service",
+            "后门与隐蔽通道": "backdoor-covert-channel",
+            "供应链与构建完整性": "supply-chain",
+            "安装/更新/卸载行为": "lifecycle-behavior",
+            "配置与加固缺失": "hardening-config",
+            "加密与协议设计": "crypto-protocol",
+            "合规与许可证": "compliance-license",
+            "Agent 与工具链风险": "agentic-risk",
+        },
+        "table_header": re.compile(r"^\|\s*编号\s*\|\s*类型\s*\|", re.M),
         "count_keys": {"高危": "High", "中危": "Medium", "低危": "Low", "信息": "Informational"},
         "finding": re.compile(r"^###\s+问题\s*\d+\s*[（(]\s*SR-(\d{4})\s*[）)]", re.M),
         "limitation": "限制",
@@ -70,6 +89,7 @@ PROFILES = {
         ],
         "fields": {
             "level": "Risk level",
+            "type": "Issue type",
             "confidence": "Confidence",
             "trigger": "Trigger",
             "cause": "Root cause",
@@ -80,6 +100,24 @@ PROFILES = {
             "verification": "Verification",
         },
         "levels": {"High": "High", "Medium": "Medium", "Low": "Low", "Informational": "Informational"},
+        "types": {
+            "memory-safety": "memory-safety",
+            "injection": "injection",
+            "authn-authz": "authn-authz",
+            "privilege-escalation": "privilege-escalation",
+            "credential-exposure": "credential-exposure",
+            "data-privacy": "data-privacy",
+            "information-disclosure": "information-disclosure",
+            "denial-of-service": "denial-of-service",
+            "backdoor-covert-channel": "backdoor-covert-channel",
+            "supply-chain": "supply-chain",
+            "lifecycle-behavior": "lifecycle-behavior",
+            "hardening-config": "hardening-config",
+            "crypto-protocol": "crypto-protocol",
+            "compliance-license": "compliance-license",
+            "agentic-risk": "agentic-risk",
+        },
+        "table_header": re.compile(r"^\|\s*ID\s*\|\s*Type\s*\|", re.M),
         "count_keys": {"High": "High", "Medium": "Medium", "Low": "Low", "Informational": "Informational"},
         "finding": re.compile(r"^###\s+Issue\s*\d+\s*[（(]\s*SR-(\d{4})\s*[）)]", re.M),
         "limitation": "Limitation",
@@ -101,6 +139,15 @@ def field_value(body: str, label: str) -> str | None:
     return match.group(1) if match else None
 
 
+def has_positive_malicious_evidence(text: str) -> bool:
+    """True when the text states suspicious/malicious behavior without a negation."""
+    for match in re.finditer(r"恶意|可疑|suspicious|malicious", text, re.I):
+        window = text[max(0, match.start() - 30):match.start()]
+        if not re.search(r"no\s|not\s|without\s|无|非|未|没有", window, re.I):
+            return True
+    return False
+
+
 def count_profile_hits(text: str, profile: dict) -> int:
     hits = 0
     for label in profile["fields"].values():
@@ -118,9 +165,9 @@ def group_of_heading(title: str, profile: dict) -> str | None:
     return None
 
 
-def parse_groups(text: str, profile: dict) -> dict[str, list[str]]:
-    """Map group heading -> issue IDs listed under it."""
-    groups: dict[str, list[str]] = {}
+def parse_groups(text: str, profile: dict) -> dict[str, list[tuple[str, str]]]:
+    """Map group heading -> (issue ID, type cell) rows listed under it."""
+    groups: dict[str, list[tuple[str, str]]] = {}
     current: str | None = None
     for line in text.splitlines():
         heading = re.match(r"^##\s*(?:\d+[.、)]?\s*)?(.+?)\s*$", line)
@@ -130,9 +177,9 @@ def parse_groups(text: str, profile: dict) -> dict[str, list[str]]:
                 groups.setdefault(current, [])
             continue
         if current:
-            row = re.match(r"^\|\s*(SR-\d{4})\s*\|", line)
+            row = re.match(r"^\|\s*(SR-\d{4})\s*\|\s*([^|]*?)\s*\|", line)
             if row:
-                groups[current].append(row.group(1))
+                groups[current].append((row.group(1), row.group(2)))
     return groups
 
 
@@ -196,6 +243,7 @@ def main() -> int:
         errors.append("no issue cards found; expected headings like '### 问题 1（SR-0001）：...' or '### Issue 1 (SR-0001): ...'")
     numbers: list[int] = []
     card_levels: dict[str, str] = {}
+    card_types: dict[str, str] = {}
     for number, body in cards:
         numbers.append(int(number))
         prefix = f"SR-{number}"
@@ -211,6 +259,23 @@ def main() -> int:
                 errors.append(f"{prefix}: '{profile['fields']['level']}' value '{token}' is not one of {', '.join(profile['levels'])}")
             else:
                 card_levels[f"SR-{number}"] = level
+        type_value = field_value(body, profile["fields"]["type"])
+        if type_value:
+            token = type_value.split("（")[0].split("(")[0].strip()
+            issue_type = profile["types"].get(token)
+            if not issue_type:
+                errors.append(
+                    f"{prefix}: '{profile['fields']['type']}' value '{token}' is not in the issue-type vocabulary "
+                    "(references/taxonomy.md)"
+                )
+            else:
+                card_types[f"SR-{number}"] = issue_type
+                if issue_type == "backdoor-covert-channel":
+                    nature = field_value(body, profile["fields"]["nature"]) or ""
+                    if not has_positive_malicious_evidence(nature):
+                        errors.append(
+                            f"{prefix}: issue type 'backdoor-covert-channel' requires suspicious or confirmed-malicious evidence"
+                        )
     if numbers and numbers != list(range(1, len(numbers) + 1)):
         errors.append(f"issue IDs must be sequential from SR-0001; found {numbers}")
 
@@ -225,12 +290,21 @@ def main() -> int:
         groups = parse_groups(text, profile)
         if not groups:
             errors.append("no severity summary tables found")
+        if not profile["table_header"].search(text):
+            errors.append("summary tables must start with an ID/type header row (编号 | 类型 | ... or ID | Type | ...)")
         seen: dict[str, str] = {}
-        for group, ids in groups.items():
-            for issue_id in ids:
+        for group, rows in groups.items():
+            for issue_id, type_cell in rows:
                 if issue_id in seen:
                     errors.append(f"{issue_id} appears more than once in the summary tables")
                 seen[issue_id] = group
+                table_type = profile["types"].get(type_cell.strip())
+                if not type_cell.strip():
+                    errors.append(f"{issue_id}: summary table is missing the type cell")
+                elif not table_type:
+                    errors.append(f"{issue_id}: summary type '{type_cell.strip()}' is not in the issue-type vocabulary")
+                elif card_types.get(issue_id) and table_type != card_types[issue_id]:
+                    errors.append(f"{issue_id}: summary type '{type_cell.strip()}' does not match the card type")
         for number, _body in cards:
             issue_id = f"SR-{number}"
             if issue_id not in seen:
@@ -244,10 +318,10 @@ def main() -> int:
 
         declared = parse_counts(text, profile)
         actual = {
-            "High": sum(len(ids) for group, ids in groups.items() if "High" in dict(profile["groups"])[group]),
-            "Medium": sum(len(ids) for group, ids in groups.items() if "Medium" in dict(profile["groups"])[group]),
+            "High": sum(len(rows) for group, rows in groups.items() if "High" in dict(profile["groups"])[group]),
+            "Medium": sum(len(rows) for group, rows in groups.items() if "Medium" in dict(profile["groups"])[group]),
             "Low+Information": sum(
-                len(ids) for group, ids in groups.items() if {"Low", "Informational"} & set(dict(profile["groups"])[group])
+                len(rows) for group, rows in groups.items() if {"Low", "Informational"} & set(dict(profile["groups"])[group])
             ),
         }
         if declared:

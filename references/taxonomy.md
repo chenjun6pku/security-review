@@ -23,6 +23,35 @@ Use one primary domain per finding. Use lifecycle, asset, impact, behavior, expo
 
 `acquisition`, `dependency-resolution`, `install`, `build`, `test`, `ci`, `runtime`, `deploy`, `update`, `rollback`, `uninstall`, `cleanup`
 
+## Issue types
+
+Every reported issue carries exactly one reader-facing type from this closed
+vocabulary. JSON output uses the canonical English value (`issue_type`);
+localized output uses the localized label.
+
+| Canonical | 中文标签 | Typical primary domains |
+|---|---|---|
+| memory-safety | 内存安全 | SR-AS, SR-RT |
+| injection | 注入与动态执行 | SR-AS |
+| authn-authz | 认证与授权缺陷 | SR-AS |
+| privilege-escalation | 权限提升 | SR-HP |
+| credential-exposure | 凭据泄露 | SR-ID |
+| data-privacy | 隐私与数据泄露 | SR-DA |
+| information-disclosure | 信息泄露（日志/侧信道） | SR-DA, SR-AS |
+| denial-of-service | 拒绝服务 | SR-AS, SR-RT |
+| backdoor-covert-channel | 后门与隐蔽通道 | SR-NW, SR-AG |
+| supply-chain | 供应链与构建完整性 | SR-SC, SR-BL |
+| lifecycle-behavior | 安装/更新/卸载行为 | SR-LC |
+| hardening-config | 配置与加固缺失 | SR-HP, SR-BL |
+| crypto-protocol | 加密与协议设计 | SR-AS |
+| compliance-license | 合规与许可证 | SR-SC |
+| agentic-risk | Agent 与工具链风险 | SR-AG |
+
+`backdoor-covert-channel` is reserved for issues whose behavior classification is
+`suspicious_behavior` or `confirmed_malicious_behavior`, or whose evidence
+otherwise demonstrates covert control or hidden communication. A capability
+alone is typed by its effect (for example `injection` or `hardening-config`).
+
 ## Asset tags
 
 `source-code`, `artifact`, `credential`, `token`, `key`, `filesystem`, `process`, `memory`, `ipc`, `database`, `browser`, `user-data`, `model`, `memory-store`, `tool`, `mcp-server`, `cloud-resource`, `network-service`, `ci-runner`, `git-repository`

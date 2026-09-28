@@ -3,7 +3,7 @@ name: security-review
 description: Perform an evidence-backed security review of a repository or software project across its lifecycle: dependencies and supply chain, build and CI, install and update, host and credentials, data, network, application code, containers, and agentic/AI/MCP systems. Use when asked to security review, audit, threat model, inspect a project for malicious or dangerous behavior, or assess a package, dependency, repository, or AI agent project before use. Separate dangerous capability from observed or confirmed malicious behavior and report confidence with actionable remediation.
 compatibility: Requires a repository/workspace inspection capability. Prefer read/search tools; use shell only for safe, non-destructive inspection. Dynamic execution should occur only in an isolated disposable environment when explicitly authorized and technically supported.
 metadata:
-  version: "1.1.4"
+  version: "1.1.5"
   standard: "Agent Skills"
   domain: "software-security"
   review_model: "lifecycle-attack-surface-risk-graph"
@@ -159,8 +159,8 @@ Output rules:
 
 - Write every human-readable part in the language of the user's request. Keep machine-readable tokens in canonical English: issue IDs, lifecycle values, tags, `severity`/`confidence`/`behavior` values, JSON field names, paths, symbols, commands, and standard identifiers.
 - Localize headings and field labels with the terminology table in `references/output.md`, and use exactly one language profile per output. Do not mix a localized list with unlocalized headings or field labels.
-- The header carries the verdict and counts; the severity-grouped summary tables carry the complete inventory. A decision verdict is expected; a numeric security score is not.
-- Keep each detail card to the nine fields and roughly 8-12 lines, and do not restate the same content in another section. Add an attack-chain line only when the path crosses components.
+- The header carries the verdict and counts; the severity-grouped summary tables carry the complete inventory with a type column. A decision verdict is expected; a numeric security score is not.
+- Keep each detail card to the ten fields and roughly 8-14 lines, and do not restate the same content in another section. Add an attack-chain line only when the path crosses components.
 - Deliver the issue list in the conversation by default. Do not create files inside the reviewed repository or its workspace, and do not modify the reviewed project.
 - Write a file only when the user asks for one: use the path they name, or a location outside the reviewed project when none is given, report the absolute path, and never overwrite an existing file without confirmation.
 - To validate, write the draft to a temporary file, run `python scripts/validate_report.py <file>` and fix what it reports, then deliver the content and delete the temporary file unless the user asked to keep a file.
@@ -169,6 +169,7 @@ Each issue card MUST contain at least:
 
 - stable ID and title
 - risk level
+- issue type (one value from the vocabulary in `references/taxonomy.md`)
 - confidence
 - trigger conditions and preconditions
 - root cause
@@ -178,7 +179,7 @@ Each issue card MUST contain at least:
 - fix
 - verification
 
-Domain, lifecycle, and tags stay in the machine-readable findings JSON; do not duplicate the same issue across severity groups.
+Domain, lifecycle, and tags stay in the machine-readable findings JSON; do not duplicate the same issue across severity groups. `backdoor-covert-channel` requires suspicious or confirmed-malicious evidence.
 
 ### 8. Build attack chains
 
@@ -316,6 +317,6 @@ Before completing the review:
 - confirm capability is not mislabeled as maliciousness
 - confirm summary tables cover every issue ID and the counts match the detail cards
 - confirm the output uses one language profile consistently
-- confirm every issue card carries the nine fields and the list ends with coverage and limitations, including a limitation
+- confirm every issue card carries the ten fields and the list ends with coverage and limitations, including a limitation
 - confirm agentic systems were reviewed for tool, identity, memory, MCP, auditability, and output-handling paths
 - list important blind spots and unavailable evidence

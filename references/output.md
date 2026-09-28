@@ -25,11 +25,11 @@ or field labels do.
 | Security issue list | 安全问题清单 |
 | Target / Review mode | 审查对象 / 审查方式 |
 | Verdict / Summary counts | 结论 / 统计 |
-| ID / Issue / Possible consequence | 编号 / 问题 / 可能导致 |
+| ID / Type / Issue / Possible consequence | 编号 / 类型 / 问题 / 可能导致 |
 | Issue details | 问题详情 |
 | Issue N (SR-0001) | 问题 N（SR-0001） |
 | Coverage and limitations | 覆盖与限制 |
-| Risk level / Confidence | 危险等级 / 置信度 |
+| Risk level / Issue type / Confidence | 危险等级 / 问题类型 / 置信度 |
 | Trigger / Root cause / Impact / Nature | 触发条件 / 原因 / 危害 / 性质 |
 | Evidence / Fix / Verification | 证据 / 修复 / 验证 |
 | Attack chain (optional) | 攻击链（可选） |
@@ -50,20 +50,20 @@ the canonical English value in JSON output (`High` / `Medium` / `Low` /
 
 ## 高危（N）
 
-| 编号 | 问题 | 可能导致 |
-|---|---|---|
-| SR-0001 | <issue in one phrase> | <consequence + precondition> |
+| 编号 | 类型 | 问题 | 可能导致 |
+|---|---|---|---|
+| SR-0001 | 内存安全 | <issue in one phrase> | <consequence + precondition> |
 
 ## 中危（N）
 
-| 编号 | 问题 | 可能导致 |
-|---|---|---|
+| 编号 | 类型 | 问题 | 可能导致 |
+|---|---|---|---|
 ...
 
 ## 低危 / 信息（N）
 
-| 编号 | 问题 | 可能导致 |
-|---|---|---|
+| 编号 | 类型 | 问题 | 可能导致 |
+|---|---|---|---|
 ...
 
 ## 问题详情
@@ -71,6 +71,7 @@ the canonical English value in JSON output (`High` / `Medium` / `Low` /
 ### 问题 1（SR-0001）：<title>
 
 - 危险等级：高
+- 问题类型：内存安全
 - 置信度：高
 - 触发条件：<who can trigger it, and with which preconditions>
 - 原因：<root cause with the code mechanism>
@@ -89,14 +90,16 @@ the canonical English value in JSON output (`High` / `Medium` / `Low` /
 
 ## Summary table rules
 
-- Every issue appears exactly once, in the severity group that matches its card; the ID column uses the stable `SR-0001` form.
+- Every issue appears exactly once, in the severity group that matches its card; the ID column uses the `SR-0001` form, which is sequential per file and not unique across files.
+- The type column carries exactly one value from the issue-type vocabulary in `references/taxonomy.md`, using the localized label, and must match the card.
 - One line per cell and roughly 40 characters or fewer. The "可能导致" cell states the consequence plus the precondition (remote/local, authentication required).
 - No CWE IDs, function names, line numbers, or standard clause numbers in the summary tables; those belong to the detail card.
 
 ## Detail card rules
 
 - One card per issue, ordered by severity, in the same order as the summary tables.
-- Keep each card to roughly 8-12 lines; merge any extra prose into the nine fields instead of adding new sections.
+- Keep each card to roughly 8-14 lines; merge any extra prose into the ten fields instead of adding new sections.
+- `问题类型` takes exactly one value from the vocabulary in `references/taxonomy.md`; `backdoor-covert-channel` requires suspicious or confirmed-malicious evidence, and a capability alone is typed by its effect.
 - `证据` keeps `file:line` references; secrets and personal data are never reproduced.
 - Add an optional `- 攻击链：` line only when the path crosses components or findings.
 
