@@ -20,3 +20,7 @@ jobs:
         run: python3 scripts/validate_rules.py
       - name: Run scanner pattern regression cases
         run: python3 scripts/run_scan_tests.py
+      - name: Validate the minimal finding example
+        run: python3 scripts/validate_report.py references/report-example.md --findings-only
+      - name: Validate the full example report
+        run: python3 scripts/validate_report.py example/security-review-2026-09-28.md

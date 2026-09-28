@@ -3,7 +3,7 @@ name: security-review
 description: Perform an evidence-backed security review of a repository or software project across its lifecycle: dependencies and supply chain, build and CI, install and update, host and credentials, data, network, application code, containers, and agentic/AI/MCP systems. Use when asked to security review, audit, threat model, inspect a project for malicious or dangerous behavior, or assess a package, dependency, repository, or AI agent project before use. Separate dangerous capability from observed or confirmed malicious behavior and report confidence with actionable remediation.
 compatibility: Requires a repository/workspace inspection capability. Prefer read/search tools; use shell only for safe, non-destructive inspection. Dynamic execution should occur only in an isolated disposable environment when explicitly authorized and technically supported.
 metadata:
-  version: "1.1.1"
+  version: "1.1.2"
   standard: "Agent Skills"
   domain: "software-security"
   review_model: "lifecycle-attack-surface-risk-graph"
@@ -154,6 +154,13 @@ Use `scripts/project_facts.py` and `scripts/static_security_scan.py` for determi
 ### 7. Report findings using the required schema
 
 Produce the Markdown report defined by `references/report-template.md` and `references/output.md`; `references/report-example.md` shows a minimal complete report. When a machine-readable finding list is requested or useful, emit JSON that conforms to `references/finding-schema.json` (see `references/finding-example.json`) alongside the report. Use `references/remediation.md` for remediation patterns, and read `references/rule-authoring.md` when adding or modifying detection rules.
+
+Output language and summary:
+
+- Write every human-readable part of the report in the language of the user's request. Keep machine-readable tokens in canonical English: domain IDs, lifecycle values, tags, `severity`/`confidence`/`behavior` values, JSON field names, paths, symbols, commands, and framework identifiers.
+- Localize headings and field labels with the terminology table in `references/output.md`, and use exactly one language profile per report. Do not mix a localized report with unlocalized headings or field labels.
+- Open every report with a localized decision summary of 3-6 single-line bullets: verdict, highest severity and counts, top risks, fixability, and the key limitation. A decision verdict is expected; a numeric security score is not.
+- Validate the finished report with `python scripts/validate_report.py <report.md>` and fix what it reports.
 
 Each finding MUST contain at least:
 
@@ -309,5 +316,7 @@ Before completing the review:
 - confirm severity and confidence are independent
 - confirm capability is not mislabeled as maliciousness
 - confirm finding IDs, lifecycle values, and fields match the report contract
+- confirm the report opens with the localized decision summary and uses one language profile consistently
+- confirm every finding includes an attack chain and a maliciousness statement
 - confirm agentic systems were reviewed for tool, identity, memory, MCP, auditability, and output-handling paths
 - list important blind spots and unavailable evidence

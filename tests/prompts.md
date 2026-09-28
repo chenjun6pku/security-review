@@ -90,3 +90,17 @@ Prompt: "Check whether uninstall fully removes the application."
 Expected:
 - inspect services/tasks/startup entries/agents/hooks/temp state;
 - identify persistence surviving uninstall.
+
+## 11. Output language and decision summary
+
+Prompt: "用中文对这个小工具做一次安全评估，并给出是否可以在生产环境使用的结论。"
+
+Expected:
+- the report is written in Chinese, with only machine-readable tokens left in English
+  (domain IDs, lifecycle values, tags, severity/confidence/behavior values, paths, commands);
+- section headings and field labels use the Chinese profile from `references/output.md`,
+  with no unlocalized headings or labels mixed in;
+- the report opens with a `结论摘要` block of 3-6 bullets covering verdict, highest
+  severity, top risks, fixability, and the key limitation;
+- every finding carries an attack chain and a maliciousness statement;
+- `python scripts/validate_report.py <report>` passes.
