@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Review"
+  short_description: "Repository-grounded security and agent-risk review"
+  default_prompt: "Review this project for security risks across the full software lifecycle, including supply chain, build, host, credentials, data, network, application, container, and agentic/MCP risks."

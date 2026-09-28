@@ -1,0 +1,6 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Windows / WSL download metadata (illegal filenames on NTFS checkouts)
+*:Zone.Identifier

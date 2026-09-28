@@ -1,0 +1,143 @@
+version: 1.0.0
+rule_count: 108
+rules:
+- id: SC-001
+  domain: SR-SC
+  title: Untrusted package or dependency source
+  lifecycle:
+  - acquisition
+  - dependency-resolution
+  tags:
+  - supply-chain
+  check: Identify dependencies resolved from unofficial, private, local, Git, URL,
+    or otherwise ambiguous sources.
+  evidence: manifest, lockfile, registry config, VCS URL
+  escalate_when: Source is attacker-controlled, mutable, or lacks provenance.
+  remediation: Use trusted registries, pin immutable versions/revisions, and document
+    exceptions.
+- id: SC-002
+  domain: SR-SC
+  title: Dependency version not locked
+  lifecycle:
+  - dependency-resolution
+  - build
+  tags:
+  - supply-chain
+  - integrity
+  check: Find unconstrained or floating dependency versions used in reproducible installation
+    paths.
+  evidence: manifest, lockfile, CI install command
+  escalate_when: Every fresh install can resolve a materially different artifact.
+  remediation: Commit lockfiles and use bounded, reviewed update policies.
+- id: SC-003
+  domain: SR-SC
+  title: Lifecycle script executes during install
+  lifecycle:
+  - dependency-resolution
+  - install
+  tags:
+  - execution
+  - supply-chain
+  check: Inspect package-manager lifecycle hooks and setup/build entry points that
+    execute automatically.
+  evidence: package manifest, setup.py/pyproject, install logs
+  escalate_when: Hook runs shell/native code with developer or CI privileges.
+  remediation: Remove unnecessary hooks; make installation deterministic and auditable.
+- id: SC-004
+  domain: SR-SC
+  title: Runtime remote code or binary download
+  lifecycle:
+  - install
+  - build
+  - runtime
+  - update
+  tags:
+  - execution
+  - network
+  check: Trace downloads whose content is subsequently executed, loaded, unpacked,
+    or installed.
+  evidence: download URL, HTTP client, exec/load sink
+  escalate_when: Downloaded content is unsigned/unpinned or directly executed.
+  remediation: Vendor or pin artifacts; verify signature/hash before execution.
+- id: SC-005
+  domain: SR-SC
+  title: Typosquatting or suspicious dependency naming
+  lifecycle:
+  - dependency-resolution
+  tags:
+  - supply-chain
+  check: Compare dependency names with expected ecosystem and first-party naming;
+    flag suspicious near matches.
+  evidence: manifest, registry metadata if available
+  escalate_when: Name is close to a trusted package and source/provenance is weak.
+  remediation: Verify package identity and registry ownership before use.
+- id: SC-006
+  domain: SR-SC
+  title: Dependency confusion or namespace collision
+  lifecycle:
+  - dependency-resolution
+  - build
+  tags:
+  - supply-chain
+  check: Check whether internal-looking package names can resolve from public registries
+    or ambiguous source precedence.
+  evidence: package manager config, scopes, registry precedence
+  escalate_when: Public artifact can satisfy an internal dependency name.
+  remediation: Configure private scopes/registries and explicit precedence.
+- id: SC-007
+  domain: SR-SC
+  title: Transitive dependency exposure
+  lifecycle:
+  - dependency-resolution
+  tags:
+  - supply-chain
+  check: Enumerate transitive dependencies and identify unpinned, obscure, or high-impact
+    components.
+  evidence: lockfile, SBOM, dependency graph
+  escalate_when: High-privilege transitive component has broad capabilities or weak
+    provenance.
+  remediation: Minimize dependency tree and pin/monitor transitive components.
+- id: SC-008
+  domain: SR-SC
+  title: Release artifact/source mismatch
+  lifecycle:
+  - acquisition
+  - update
+  tags:
+  - integrity
+  - supply-chain
+  check: Compare release metadata, tag/commit, packaged files, and documented build
+    inputs when available.
+  evidence: release metadata, checksums, source tree, provenance
+  escalate_when: Artifact contains code not traceable to reviewed source or build
+    inputs.
+  remediation: Require reproducible/provenance-backed releases and integrity verification.
+- id: SC-009
+  domain: SR-SC
+  title: Missing artifact integrity verification
+  lifecycle:
+  - acquisition
+  - install
+  - update
+  tags:
+  - integrity
+  check: Check whether downloaded binaries/packages/images are authenticated or only
+    fetched over transport.
+  evidence: checksum/signature verification code/config
+  escalate_when: Critical artifacts are accepted solely by URL or mutable tag.
+  remediation: Verify cryptographic signatures or trusted digests.
+- id: SC-010
+  domain: SR-SC
+  title: Mutable container image or action reference
+  lifecycle:
+  - acquisition
+  - build
+  - deploy
+  tags:
+  - supply-chain
+  - integrity
+  check: Find image/action dependencies pinned only by tags or branches.
+  evidence: Dockerfile, workflow YAML
+  escalate_when: Privileged or release path uses mutable references.
+  remediation: Pin to immutable digests/commits and review updates.
+
