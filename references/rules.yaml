@@ -1,4 +1,4 @@
-version: 1.1.3
+version: 1.1.4
 rule_count: 112
 rules:
 - id: SC-001

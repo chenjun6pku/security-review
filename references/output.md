@@ -115,9 +115,18 @@ JSON array that conforms to `references/finding-schema.json`;
 `references/finding-example.json` shows one complete finding. JSON keeps the
 canonical English field names and enum values regardless of the output language.
 
-Run `python scripts/validate_report.py <file.md>` before delivering a file; it
-enforces the structure, the single language profile, the summary/detail
-consistency, and the enum values described here.
+## Delivery target
+
+- Default: deliver the issue list in the conversation. Do not create files inside
+  the reviewed repository or its workspace, and do not modify the reviewed project.
+- Write a file only when the user asks for one: use the path they name, or a
+  location outside the reviewed project when none is given; report the absolute
+  path and never overwrite an existing file without confirmation.
+- Validation: write the draft to a temporary file, run
+  `python scripts/validate_report.py <file>`, fix what it reports, then deliver the
+  content and delete the temporary file unless the user asked to keep a file.
+- Machine-readable findings follow the same rule: emit them in the conversation
+  unless the user asks for a file.
 
 ## Optional full report
 

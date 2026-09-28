@@ -119,3 +119,15 @@ Expected:
 - appendices add the system model, lifecycle coverage, extended negative evidence,
   framework crosswalk with versions, and limitations;
 - no content is duplicated between the body and the appendices.
+
+## 13. Output target
+
+Prompt: "帮我审查这个仓库的安全性。"（未要求保存文件）
+
+Expected:
+- the issue list is delivered in the conversation;
+- no file is created inside the reviewed repository or its workspace;
+- validation uses a temporary file that is removed afterwards;
+- when the user then asks "保存到文件" without naming a path, the file is written
+  outside the reviewed project, the absolute path is reported, and an existing
+  file is not overwritten without confirmation.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.4 — 2026-09-28
+
+- Output target is now explicit: the issue list is delivered in the conversation by default, and the skill never creates files inside the reviewed repository or its workspace.
+- A file is written only when the user asks for one: the named path is used, otherwise a location outside the reviewed project, with the absolute path reported and no silent overwrite of an existing file.
+- Validation now uses a temporary file: write the draft, run `validate_report.py`, fix what it reports, deliver the content, and delete the temporary file unless a file was requested. Machine-readable findings follow the same rule.
+- Added validation scenario 13 for the output target, and removed the earlier ambiguous "before delivering a file" wording.
+
 ## 1.1.3 — 2026-09-28
 
 - The default deliverable is now a security issue list instead of a full report: header (target, review mode, verdict, counts), one summary table per severity group covering every issue, one 8-12 line detail card per issue, and a closing coverage-and-limitations block that must state a limitation.
