@@ -38,10 +38,16 @@
 | Update | | | |
 | Rollback | | | |
 | Uninstall | | | |
+| Cleanup | | | |
+| Agent-mediated / isolated mode | | | |
 
 ## 4. Findings
 
-Use one section per finding following `references/output.md`.
+Use one section per finding following `references/output.md`. A minimal complete
+report is in `references/report-example.md`, and `references/finding-example.json`
+shows one finding in the machine-readable form defined by
+`references/finding-schema.json`. The Markdown report is the primary deliverable;
+produce findings JSON in addition only when requested or useful to the consumer.
 
 ## 5. Attack chains
 
@@ -67,7 +73,9 @@ Group by:
 
 ## 8. Framework crosswalk
 
-Map material findings to applicable framework identifiers and versions. Do not invent requirement mappings.
+Map material findings to applicable framework identifiers and versions using the
+table and versioning rule in `references/framework-crosswalk.md`. Do not invent
+requirement mappings.
 
 ## 9. Limitations and assumptions
 

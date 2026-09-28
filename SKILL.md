@@ -1,9 +1,9 @@
 ---
 name: security-review
-description: Perform a repository-grounded security review of software projects across acquisition, installation, update, uninstall, build and CI/CD, runtime, host privileges, credentials and identity, data access, process/IPC, network, application vulnerabilities, dependencies and software supply chain, containers/sandboxes, and agentic coding/AI/MCP security. Use whenever the user asks to security review, audit, assess, threat model, find security risks, inspect a project for malicious or dangerous behavior, review a dependency/package/repository before installation, or evaluate an AI coding agent project. Produce evidence-backed findings, attack chains, confidence and actionable remediation; distinguish dangerous capability from observed or confirmed malicious behavior.
+description: Perform an evidence-backed security review of a repository or software project across its lifecycle: dependencies and supply chain, build and CI, install and update, host and credentials, data, network, application code, containers, and agentic/AI/MCP systems. Use when asked to security review, audit, threat model, inspect a project for malicious or dangerous behavior, or assess a package, dependency, repository, or AI agent project before use. Separate dangerous capability from observed or confirmed malicious behavior and report confidence with actionable remediation.
 compatibility: Requires a repository/workspace inspection capability. Prefer read/search tools; use shell only for safe, non-destructive inspection. Dynamic execution should occur only in an isolated disposable environment when explicitly authorized and technically supported.
 metadata:
-  version: "1.0.0"
+  version: "1.1.1"
   standard: "Agent Skills"
   domain: "software-security"
   review_model: "lifecycle-attack-surface-risk-graph"
@@ -42,7 +42,7 @@ Identify:
 
 Separate production code from tests, examples, fixtures, benchmarks, documentation, generated code, build tooling, and local developer helpers. Do not assume tests or examples are harmless; determine whether they are reachable by normal workflows.
 
-Read `references/platforms.md` only for relevant ecosystem guidance. Read `references/standards.md` when a framework/version mapping is needed.
+Read `references/platforms.md` only for relevant ecosystem guidance. Read `references/standards.md` when a framework/version mapping is needed, and `references/framework-crosswalk.md` when recording which framework a finding maps to.
 
 ### 2. Build the system and trust model
 
@@ -60,6 +60,8 @@ Create a compact model containing:
 
 Treat these as first-class entities. Use `references/taxonomy.md` for the canonical model.
 
+Model each candidate finding as `source → control boundary → transformation → sink → consequence`, and grade evidence with `references/assessment.md`. Collect stage- and surface-specific evidence with `references/evidence.md`.
+
 ### 3. Execute the lifecycle review
 
 Review in this order:
@@ -70,7 +72,10 @@ Review in this order:
 4. build / test / CI
 5. runtime / deployment
 6. update / auto-update
-7. uninstall / removal
+7. rollback / downgrade
+8. uninstall / removal / cleanup
+
+For agent-mediated systems, review through the agent control model in `references/agentic.md` and record the `agent-mediated` mode (plus `containerized` or `sandboxed` where relevant) in lifecycle coverage.
 
 At each stage ask:
 
@@ -84,7 +89,15 @@ At each stage ask:
 
 ### 4. Run domain reviews
 
-Use the canonical domains in `references/taxonomy.md` and read detailed rules from `references/rules.yaml` as needed.
+Use the canonical domains in `references/taxonomy.md`. Select only the rules relevant to the detected project type and lifecycle; do not read `references/rules.yaml` in full.
+
+- Compact rule index: `python scripts/select_rules.py`
+- Select by domain: `python scripts/select_rules.py --domain SR-AG`
+- Combine filters: `python scripts/select_rules.py --domain SR-NW --lifecycle runtime`
+- Fallback when scripts cannot run: `rg -B 1 -A 18 'domain: SR-AG' references/rules.yaml` (rule blocks run up to 16 lines)
+
+Rules are validated by `python scripts/validate_rules.py`; per-domain true-positive and near-miss fixtures live in `tests/fixtures.yaml`.
+Indicator patterns are regression-tested by `python scripts/run_scan_tests.py` against `tests/scanner_cases.yaml`.
 
 Minimum domains:
 
@@ -140,12 +153,13 @@ Use `scripts/project_facts.py` and `scripts/static_security_scan.py` for determi
 
 ### 7. Report findings using the required schema
 
-Use `references/finding-schema.json` as the canonical field contract and `references/report-template.md` as the report contract. Read `references/rule-authoring.md` when adding or modifying detection rules.
+Produce the Markdown report defined by `references/report-template.md` and `references/output.md`; `references/report-example.md` shows a minimal complete report. When a machine-readable finding list is requested or useful, emit JSON that conforms to `references/finding-schema.json` (see `references/finding-example.json`) alongside the report. Use `references/remediation.md` for remediation patterns, and read `references/rule-authoring.md` when adding or modifying detection rules.
 
 Each finding MUST contain at least:
 
 - stable ID
 - title
+- severity
 - primary domain
 - lifecycle phase
 - affected component/path
@@ -286,12 +300,14 @@ Never treat inability to dynamically execute as evidence that a risk does not ex
 
 Before completing the review:
 
-- confirm lifecycle coverage
+- confirm lifecycle coverage includes rollback, cleanup, and agent-mediated or isolated modes where applicable
+- confirm rule selection used the selector or the documented fallback instead of loading the entire rule file
 - confirm trust-boundary coverage
 - confirm all findings have evidence
 - confirm no duplicate findings are merely restated under multiple domains
 - confirm attack chains connect related findings
 - confirm severity and confidence are independent
 - confirm capability is not mislabeled as maliciousness
-- confirm agentic systems were reviewed for tool, identity, memory, MCP, and output-handling paths
+- confirm finding IDs, lifecycle values, and fields match the report contract
+- confirm agentic systems were reviewed for tool, identity, memory, MCP, auditability, and output-handling paths
 - list important blind spots and unavailable evidence

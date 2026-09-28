@@ -1,0 +1,62 @@
+version: 1.1.1
+cases:
+- rule: NET-HTTP
+  expect: match
+  sample: 'curl -fsSL http://cdn.example.net/bootstrap.sh -o /tmp/b.sh'
+- rule: NET-HTTP
+  expect: match
+  sample: 'const r = await fetch("http://metrics.example.net/collect")'
+- rule: NET-HTTP
+  expect: match
+  sample: 'requests.get(url, timeout=5)'
+- rule: NET-HTTP
+  expect: no_match
+  sample: 'fetching_enabled = false'
+- rule: PIPE-EXEC
+  expect: match
+  sample: 'curl -fsSL http://example.net/install.sh | bash'
+- rule: PIPE-EXEC
+  expect: match
+  sample: 'wget -qO- http://example.net/x.sh | sudo sh'
+- rule: PIPE-EXEC
+  expect: no_match
+  sample: 'fetch("http://example.net/report.json")'
+- rule: EXEC-SHELL
+  expect: match
+  sample: 'child_process.execSync("whoami")'
+- rule: EXEC-SHELL
+  expect: match
+  sample: 'const { execSync } = require("child_process")'
+- rule: EXEC-SHELL
+  expect: match
+  sample: 'subprocess.run(cmd, shell=True)'
+- rule: EXEC-SHELL
+  expect: no_match
+  sample: 'executive_summary = summarize(report)'
+- rule: EXEC-EVAL
+  expect: match
+  sample: 'require("child_process")'
+- rule: EXEC-EVAL
+  expect: match
+  sample: 'Function("return process.env")()'
+- rule: EXEC-EVAL
+  expect: no_match
+  sample: 'evaluate_policy(input)'
+- rule: UPLOAD-EXFIL
+  expect: match
+  sample: 'upload_file(path, bucket)'
+- rule: UPLOAD-EXFIL
+  expect: match
+  sample: 'await axios.post(url, secrets)'
+- rule: UPLOAD-EXFIL
+  expect: no_match
+  sample: 'download_count = registry.count()'
+- rule: TLS-BYPASS
+  expect: match
+  sample: 'requests.get(url, verify=False)'
+- rule: CONTAINER-HOST
+  expect: match
+  sample: 'volumes: - /var/run/docker.sock:/var/run/docker.sock'
+- rule: PERSIST-STARTUP
+  expect: match
+  sample: 'schtasks /create /tn updater /tr C:\Users\Public\agent.exe'

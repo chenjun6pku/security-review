@@ -1,5 +1,5 @@
-version: 1.0.0
-rule_count: 108
+version: 1.1.1
+rule_count: 112
 rules:
 - id: SC-001
   domain: SR-SC
@@ -140,4 +140,1341 @@ rules:
   evidence: Dockerfile, workflow YAML
   escalate_when: Privileged or release path uses mutable references.
   remediation: Pin to immutable digests/commits and review updates.
-
+- id: SC-011
+  domain: SR-SC
+  title: Build provenance unavailable
+  lifecycle:
+  - build
+  - update
+  tags:
+  - integrity
+  - supply-chain
+  check: Determine whether produced artifacts can be traced to source, builder, inputs,
+    and time.
+  evidence: attestation/provenance files or absence thereof
+  escalate_when: Critical distribution lacks verifiable provenance.
+  remediation: Adopt provenance/attestations and retain build metadata.
+- id: SC-012
+  domain: SR-SC
+  title: Automatic dependency or release update is unreviewed
+  lifecycle:
+  - update
+  - build
+  tags:
+  - supply-chain
+  - execution
+  check: Inspect bots, auto-updaters, package managers, and release automation for
+    unattended code changes.
+  evidence: workflow config, updater logic, policy
+  escalate_when: Update can execute new code with sensitive privileges without review
+    or verification.
+  remediation: Add pinning, verification, staged rollout, and approval gates.
+- id: LC-001
+  domain: SR-LC
+  title: Install-time command execution
+  lifecycle:
+  - install
+  tags:
+  - execution
+  check: Identify commands automatically run by installers/package managers.
+  evidence: installer scripts, package hooks, logs
+  escalate_when: Runs with elevated privileges or accesses secrets/host controls.
+  remediation: Minimize automatic execution and document required privileges.
+- id: LC-002
+  domain: SR-LC
+  title: Installer privilege overreach
+  lifecycle:
+  - install
+  tags:
+  - privilege-escalation
+  check: Check whether installers request admin/root only for actions that truly need
+    it.
+  evidence: installer manifest, sudo/UAC/service operations
+  escalate_when: Broad privileged phase executes unrelated code or downloads content.
+  remediation: Split privileged operations from untrusted installation steps.
+- id: LC-003
+  domain: SR-LC
+  title: Update executes untrusted code
+  lifecycle:
+  - update
+  tags:
+  - execution
+  - integrity
+  check: Trace updater inputs, artifact verification, and execution privileges.
+  evidence: updater code/config, signatures, update URLs
+  escalate_when: Updater executes unsigned or remote content with elevated rights.
+  remediation: Verify artifact before privileged execution.
+- id: LC-004
+  domain: SR-LC
+  title: Downgrade or rollback weakness
+  lifecycle:
+  - update
+  - rollback
+  tags:
+  - integrity
+  check: Check whether an older vulnerable or attacker-chosen version can be installed
+    without policy checks.
+  evidence: version comparison, update metadata
+  escalate_when: Rollback bypasses security controls or restores known-vulnerable
+    code.
+  remediation: Enforce minimum secure version and signed rollback metadata.
+- id: LC-005
+  domain: SR-LC
+  title: Persistent component survives update
+  lifecycle:
+  - update
+  tags:
+  - persistence
+  check: Check old helpers/services/plugins remaining active after upgrade.
+  evidence: update scripts, service definitions, file cleanup
+  escalate_when: Old component can execute independently after replacement.
+  remediation: Remove obsolete components and revalidate persistence state.
+- id: LC-006
+  domain: SR-LC
+  title: Uninstall script execution
+  lifecycle:
+  - uninstall
+  tags:
+  - execution
+  check: Inspect uninstall hooks and privileged cleanup code.
+  evidence: uninstall scripts, package metadata
+  escalate_when: Uninstall executes remote/local untrusted content or broad privileged
+    commands.
+  remediation: Keep uninstall deterministic and privilege-minimized.
+- id: LC-007
+  domain: SR-LC
+  title: Uninstall leaves persistence
+  lifecycle:
+  - uninstall
+  - cleanup
+  tags:
+  - persistence
+  check: Check startup entries, services, tasks, hooks, shell profiles, agents, sockets
+    after removal.
+  evidence: cleanup code, service/task definitions
+  escalate_when: Independent code remains runnable after uninstall.
+  remediation: Make removal idempotent and verify all persistent components are deleted.
+- id: LC-008
+  domain: SR-LC
+  title: Uninstall deletes unrelated data
+  lifecycle:
+  - uninstall
+  tags:
+  - integrity
+  - availability
+  check: Trace deletion targets and wildcard/path construction.
+  evidence: file operations, path joins, elevated commands
+  escalate_when: User/system paths can be deleted due to broad or attacker-influenced
+    input.
+  remediation: Constrain paths and use canonicalization/allow-lists.
+- id: LC-009
+  domain: SR-LC
+  title: Update channel or metadata transport weakness
+  lifecycle:
+  - update
+  tags:
+  - network
+  - integrity
+  check: Check update metadata origin, TLS verification, redirect handling, and signed
+    metadata.
+  evidence: network client, URL/config, certificate validation
+  escalate_when: Attacker can influence update target or version metadata.
+  remediation: Use authenticated metadata, TLS verification, and signing.
+- id: LC-010
+  domain: SR-LC
+  title: Incomplete cleanup of secrets or sensitive temporary state
+  lifecycle:
+  - uninstall
+  - cleanup
+  tags:
+  - credential-access
+  - privacy
+  check: Find temporary tokens/configs/logs that persist after removal.
+  evidence: temp paths, cache/log cleanup code
+  escalate_when: Persistent secrets are readable by other users/processes.
+  remediation: Use least-privilege permissions and secure cleanup.
+- id: BL-001
+  domain: SR-BL
+  title: Build script command execution
+  lifecycle:
+  - build
+  tags:
+  - execution
+  check: Inspect Make/CMake/Gradle/Maven/MSBuild/npm/pip/Cargo and generators for
+    command execution.
+  evidence: build files, scripts, command construction
+  escalate_when: Build can execute untrusted input or remote scripts.
+  remediation: Make build inputs explicit, pinned, and non-networked where possible.
+- id: BL-002
+  domain: SR-BL
+  title: Git hook execution
+  lifecycle:
+  - build
+  - runtime
+  tags:
+  - execution
+  check: Inspect repository hooks and hook installation/configuration.
+  evidence: .git/hooks, core.hooksPath, scripts
+  escalate_when: Automatic developer/CI execution occurs on checkout/commit/merge.
+  remediation: Avoid unreviewed hooks; use centralized controlled hooks if needed.
+- id: BL-003
+  domain: SR-BL
+  title: CI workflow runs untrusted code with write/token privileges
+  lifecycle:
+  - ci
+  tags:
+  - execution
+  - credential-access
+  - integrity
+  check: Inspect event triggers, permissions, fork/PR handling, and privileged runners.
+  evidence: workflow YAML, token permissions, runner config
+  escalate_when: Untrusted PR content can execute on trusted/self-hosted runner or
+    access write tokens.
+  remediation: Use least-privilege permissions and isolated runners for untrusted
+    code.
+- id: BL-004
+  domain: SR-BL
+  title: Self-hosted runner trust-boundary violation
+  lifecycle:
+  - ci
+  tags:
+  - host-compromise
+  - credential-access
+  check: Check whether untrusted jobs share a persistent self-hosted runner or workspace.
+  evidence: runner labels, job constraints, cleanup
+  escalate_when: Untrusted jobs can access host filesystem, credentials, sockets,
+    or later jobs.
+  remediation: Use ephemeral isolated runners and aggressive cleanup.
+- id: BL-005
+  domain: SR-BL
+  title: CI secret exposure to build steps
+  lifecycle:
+  - ci
+  - build
+  tags:
+  - credential-access
+  check: Trace secrets into environment, files, logs, artifacts, and child processes.
+  evidence: workflow secrets, env, logs, artifact upload
+  escalate_when: Secret reaches untrusted code or is printed/exfiltrable.
+  remediation: Scope secrets narrowly and avoid injecting them into untrusted steps.
+- id: BL-006
+  domain: SR-BL
+  title: Build-time network fetch of executable content
+  lifecycle:
+  - build
+  - ci
+  tags:
+  - network
+  - execution
+  check: Find curl/wget/npm/npx/pip/gohost/git or equivalent downloads followed by
+    execution.
+  evidence: build scripts, shell commands, URLs
+  escalate_when: Fetched content is executed without integrity verification.
+  remediation: Pin and verify dependencies/artifacts; use controlled mirrors.
+- id: BL-007
+  domain: SR-BL
+  title: Build cache poisoning
+  lifecycle:
+  - build
+  - ci
+  tags:
+  - integrity
+  - supply-chain
+  check: Check shared caches, cache keys, write permissions, and trust between branches/jobs.
+  evidence: CI cache config, build directories
+  escalate_when: Untrusted job can populate artifacts later trusted by release jobs.
+  remediation: Isolate caches and bind them to trusted identities/commits.
+- id: BL-008
+  domain: SR-BL
+  title: Code generator or compiler plugin trust gap
+  lifecycle:
+  - build
+  tags:
+  - supply-chain
+  - execution
+  check: Inspect custom generators, proc macros, annotation processors, compiler plugins,
+    and codegen downloads.
+  evidence: build dependencies, generator code
+  escalate_when: Generator has broad file/network/command privileges and weak provenance.
+  remediation: Pin/verify toolchain components and isolate generation.
+- id: BL-009
+  domain: SR-BL
+  title: OIDC or CI identity over-scoped
+  lifecycle:
+  - ci
+  tags:
+  - credential-access
+  - identity-compromise
+  check: Review federated credentials and token claims/permissions used by jobs.
+  evidence: workflow permissions, cloud trust policy
+  escalate_when: Any untrusted build can mint credentials to production resources.
+  remediation: Bind claims to trusted refs/events and least privilege.
+- id: BL-010
+  domain: SR-BL
+  title: Generated artifact not traceable to source
+  lifecycle:
+  - build
+  tags:
+  - integrity
+  check: Check generated files and release outputs for unexplained or unaudited changes.
+  evidence: source generator, build manifest, artifact diff
+  escalate_when: Generated artifact contains executable behavior absent from reviewed
+    source.
+  remediation: Record generation inputs and reproducible build metadata.
+- id: BL-011
+  domain: SR-BL
+  title: Test phase executes untrusted fixtures or downloaded assets
+  lifecycle:
+  - test
+  - ci
+  tags:
+  - execution
+  - supply-chain
+  check: Inspect test harnesses that execute repository fixtures, downloaded corpora,
+    third-party test binaries, or generated test code with developer or CI privileges.
+  evidence: test runner config, fixtures, download step, CI test job
+  escalate_when: Untrusted fixtures execute in an environment with secrets, signing
+    keys, or deployment credentials.
+  remediation: Isolate test execution, pin test assets, and separate test credentials
+    from release credentials.
+- id: BL-012
+  domain: SR-BL
+  title: Test environment shares production credentials or data
+  lifecycle:
+  - test
+  - ci
+  tags:
+  - credential-access
+  - data-access
+  - ci
+  check: Check whether test jobs use production identities, datasets, or service
+    accounts instead of isolated test-only resources.
+  evidence: CI job config, test environment variables, dataset references
+  escalate_when: Test code or fixtures can read or modify production data, or can
+    mint production credentials.
+  remediation: Separate test identities and data; use synthetic fixtures and
+    read-only, narrowly scoped test credentials.
+- id: HP-001
+  domain: SR-HP
+  title: Direct privileged execution
+  lifecycle:
+  - install
+  - build
+  - runtime
+  - update
+  tags:
+  - execution
+  - privilege-escalation
+  check: Identify root/SYSTEM/Administrator/sudo/pkexec/runas/setuid or equivalent
+    execution.
+  evidence: service files, command lines, privilege APIs
+  escalate_when: Untrusted or network-derived input reaches privileged execution.
+  remediation: Drop privileges and isolate privileged helper functions.
+- id: HP-002
+  domain: SR-HP
+  title: Privilege escalation path
+  lifecycle:
+  - runtime
+  tags:
+  - privilege-escalation
+  check: Trace operations that invoke privileged helpers, services, setuid binaries,
+    or vulnerable interfaces.
+  evidence: IPC, service commands, permission checks
+  escalate_when: Low-privilege input can control privileged action.
+  remediation: Enforce authorization at the privileged boundary.
+- id: HP-003
+  domain: SR-HP
+  title: Local account or group modification
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - identity-compromise
+  check: Inspect account creation, group membership, sudoers/policy modification.
+  evidence: user/group APIs, shell commands
+  escalate_when: Remote/untrusted input or unattended install can create privileged
+    identities.
+  remediation: Require explicit admin policy and tightly scope account operations.
+- id: HP-004
+  domain: SR-HP
+  title: Security control modification
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - integrity
+  check: Look for firewall, EDR/AV, audit, policy, or security-service modifications.
+  evidence: system commands, policy APIs
+  escalate_when: Security controls are disabled or weakened without explicit admin
+    intent.
+  remediation: Remove capability or enforce controlled admin workflow.
+- id: HP-005
+  domain: SR-HP
+  title: System/network configuration modification
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - integrity
+  - network
+  check: Inspect DNS, hosts, proxies, routes, network interfaces and resolver changes.
+  evidence: config files, OS APIs, privileged commands
+  escalate_when: Changes can redirect security-sensitive traffic or persist.
+  remediation: Constrain changes to task-specific resources.
+- id: HP-006
+  domain: SR-HP
+  title: System file modification or destruction
+  lifecycle:
+  - runtime
+  - update
+  - uninstall
+  tags:
+  - integrity
+  - availability
+  check: Trace writes/deletes to system and user paths.
+  evidence: file APIs, shell commands, path construction
+  escalate_when: Attacker-controlled path reaches privileged write/delete.
+  remediation: Use canonicalized allow-lists and safe temporary files.
+- id: HP-007
+  domain: SR-HP
+  title: Startup persistence
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - persistence
+  check: Inspect startup folders, LaunchAgents/Daemons, systemd, init, registry run
+    keys, login items, shell startup.
+  evidence: startup configs, service registration code
+  escalate_when: Persistence is installed without clear user/admin intent.
+  remediation: Remove unnecessary persistence and document legitimate startup behavior.
+- id: HP-008
+  domain: SR-HP
+  title: Scheduled task persistence
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - persistence
+  check: Inspect Cron/systemd timers/Task Scheduler/launchd scheduling.
+  evidence: task definitions, shell commands
+  escalate_when: Task executes hidden or remotely fetched code.
+  remediation: Use explicit signed binaries and minimal privileges.
+- id: HP-009
+  domain: SR-HP
+  title: Service/daemon registration or modification
+  lifecycle:
+  - install
+  - update
+  tags:
+  - persistence
+  - privilege-escalation
+  check: Inspect service registration, configuration, executable paths, and restart
+    policy.
+  evidence: service unit/plist/registry/service manager
+  escalate_when: Service path can be replaced by lower-privilege or untrusted user.
+  remediation: Lock executable/config paths and permissions.
+- id: HP-010
+  domain: SR-HP
+  title: Shell environment or PATH manipulation
+  lifecycle:
+  - install
+  - runtime
+  - update
+  tags:
+  - execution
+  - persistence
+  check: Inspect modifications to PATH, shell rc files, aliases, functions, interpreter
+    selection.
+  evidence: shell profile writes, environment setup
+  escalate_when: Attacker-controlled binary can be selected before trusted binary.
+  remediation: Use absolute paths and controlled environment.
+- id: HP-011
+  domain: SR-HP
+  title: Program or library replacement hijack
+  lifecycle:
+  - runtime
+  - update
+  tags:
+  - execution
+  - integrity
+  check: Check replacement of executables, DLL/shared-library search paths, plugin
+    directories.
+  evidence: file writes, loader config, search paths
+  escalate_when: Lower-integrity actor can replace code loaded by a privileged process.
+  remediation: Harden ownership/permissions and verify binaries.
+- id: ID-001
+  domain: SR-ID
+  title: Environment secret access
+  lifecycle:
+  - runtime
+  - build
+  - ci
+  tags:
+  - credential-access
+  check: Find access to environment variables likely to contain credentials or tokens.
+  evidence: env var names, process environment reads
+  escalate_when: Secrets are broadly scanned and transmitted or written to logs/files.
+  remediation: Limit environment exposure and redact outputs.
+- id: ID-002
+  domain: SR-ID
+  title: Dotenv/config secret harvesting
+  lifecycle:
+  - runtime
+  - build
+  tags:
+  - credential-access
+  check: Inspect scanning/reading of .env and configuration secret stores.
+  evidence: filesystem paths, glob patterns, parsers
+  escalate_when: Untrusted input can trigger bulk discovery or exfiltration.
+  remediation: Scope reads to required configuration and use secret managers.
+- id: ID-003
+  domain: SR-ID
+  title: SSH credential access
+  lifecycle:
+  - runtime
+  - install
+  tags:
+  - credential-access
+  - identity-compromise
+  check: Check reads of SSH keys/config/agent sockets and SSH credential use.
+  evidence: filesystem paths, SSH APIs, socket access
+  escalate_when: Private keys or agent sockets are accessible beyond task scope.
+  remediation: Do not expose host SSH identity; use scoped keys/agents.
+- id: ID-004
+  domain: SR-ID
+  title: Cloud credential access
+  lifecycle:
+  - runtime
+  - build
+  - ci
+  tags:
+  - credential-access
+  - cloud-compromise
+  check: Inspect AWS/Azure/GCP credential paths, metadata endpoints, workload identity,
+    and SDK default chains.
+  evidence: SDK config, metadata URL, env vars, credential files
+  escalate_when: Any untrusted process can obtain reusable cloud credentials.
+  remediation: Use least-privilege identities and metadata/network controls.
+- id: ID-005
+  domain: SR-ID
+  title: Kubernetes credential access
+  lifecycle:
+  - runtime
+  - ci
+  tags:
+  - credential-access
+  - cloud-compromise
+  check: Inspect kubeconfig, service-account token, cluster credentials and in-cluster
+    API access.
+  evidence: paths, env vars, Kubernetes API calls
+  escalate_when: Credential is reused or exposed outside intended workload.
+  remediation: Scope RBAC and mount only required tokens.
+- id: ID-006
+  domain: SR-ID
+  title: Git credential access
+  lifecycle:
+  - runtime
+  - build
+  tags:
+  - credential-access
+  - source-compromise
+  check: Inspect Git credential helpers, PATs, SSH remotes, and token-bearing URLs.
+  evidence: git config, credential helper calls, remotes
+  escalate_when: Credentials are read by untrusted code or logged.
+  remediation: Use short-lived scoped tokens and avoid credential-bearing URLs.
+- id: ID-007
+  domain: SR-ID
+  title: Browser session/cookie access
+  lifecycle:
+  - runtime
+  tags:
+  - credential-access
+  - privacy
+  check: Inspect browser profiles, cookie databases, password stores, session stores,
+    and browser automation APIs.
+  evidence: profile paths, browser APIs
+  escalate_when: Sensitive session material is collected outside an explicit browser-security
+    workflow.
+  remediation: Use dedicated browser profiles and least-privilege automation.
+- id: ID-008
+  domain: SR-ID
+  title: Certificate/private-key access
+  lifecycle:
+  - runtime
+  - install
+  tags:
+  - credential-access
+  - identity-compromise
+  check: Inspect key/certificate stores and file access for TLS/client/code-signing
+    credentials.
+  evidence: paths, crypto APIs, OS keychain APIs
+  escalate_when: Private material leaves secure store or is exposed to broad processes.
+  remediation: Use OS-backed stores and avoid exporting private keys.
+- id: ID-009
+  domain: SR-ID
+  title: Credential discovery sweep
+  lifecycle:
+  - runtime
+  - install
+  - build
+  tags:
+  - credential-access
+  check: Identify recursive/glob scanning of common credential locations or process
+    environments.
+  evidence: glob patterns, directory walks
+  escalate_when: Bulk scanning exists without a narrow business requirement.
+  remediation: Restrict paths and data classes; avoid broad discovery.
+- id: ID-010
+  domain: SR-ID
+  title: Credential use beyond declared task scope
+  lifecycle:
+  - runtime
+  - agent-mediated
+  tags:
+  - credential-access
+  - identity-compromise
+  check: Compare credential use with user-requested operation and declared scopes.
+  evidence: tool calls, API clients, authorization scopes
+  escalate_when: Credential can be used for unrelated writes or external actions.
+  remediation: Use scoped, short-lived, task-bound credentials.
+- id: ID-011
+  domain: SR-ID
+  title: Long-lived credentials baked into deployment configuration or images
+  lifecycle:
+  - deploy
+  - build
+  tags:
+  - credential
+  - confidentiality
+  - cloud-compromise
+  check: Inspect deployment manifests, image layers, and generated environment
+    files for embedded long-lived keys or tokens.
+  evidence: deploy manifests, Dockerfile, secret templates, pipeline variables
+  escalate_when: Credentials are distributed to shared or runtime environments and
+    readable by untrusted code.
+  remediation: Inject short-lived credentials at runtime from a secret store and
+    keep them out of images, manifests, and generated files.
+- id: DA-001
+  domain: SR-DA
+  title: Broad filesystem collection
+  lifecycle:
+  - runtime
+  - agent-mediated
+  tags:
+  - data-access
+  - collection
+  check: Identify recursive reads outside project/task scope.
+  evidence: glob/walk paths, archive creation
+  escalate_when: Collection includes home directories or unrelated user data.
+  remediation: Restrict filesystem roots and explicit allow-lists.
+- id: DA-002
+  domain: SR-DA
+  title: Browser history/cache collection
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Inspect browser data files and history/cache APIs.
+  evidence: profile paths, SQL queries, browser APIs
+  escalate_when: Collected data is unrelated to the stated function or sent externally.
+  remediation: Limit collection and redact sensitive browser data.
+- id: DA-003
+  domain: SR-DA
+  title: Chat/email/contact collection
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Inspect APIs/files for messaging, mail, contacts, calendars.
+  evidence: provider APIs, local stores, scopes
+  escalate_when: Broad content scopes are used without a necessary purpose.
+  remediation: Request narrow scopes and minimize retained data.
+- id: DA-004
+  domain: SR-DA
+  title: Clipboard collection
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Inspect clipboard APIs and polling loops.
+  evidence: clipboard APIs, timers
+  escalate_when: Clipboard contents are stored or transmitted without explicit need.
+  remediation: Avoid clipboard collection; clear retained data promptly.
+- id: DA-005
+  domain: SR-DA
+  title: Keyboard/input capture
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Look for global hooks, keylogging APIs, input event capture.
+  evidence: OS input APIs, hooks
+  escalate_when: Captures credentials or input outside app window/task.
+  remediation: Do not implement global capture unless explicitly required and controlled.
+- id: DA-006
+  domain: SR-DA
+  title: Screen/audio/video capture
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Inspect screen, camera, microphone APIs and recording loops.
+  evidence: OS media APIs, permissions
+  escalate_when: Capture occurs silently, continuously, or without task-specific need.
+  remediation: Require explicit permissions and visible user controls.
+- id: DA-007
+  domain: SR-DA
+  title: Sensitive local database access
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - privacy
+  check: Inspect SQLite/DB/cache access for user/business data outside scope.
+  evidence: DB paths, SQL queries, connection strings
+  escalate_when: Bulk extraction or unrelated database writes are reachable.
+  remediation: Use least-privilege DB accounts and narrow queries.
+- id: DA-008
+  domain: SR-DA
+  title: Telemetry or analytics data overcollection
+  lifecycle:
+  - runtime
+  tags:
+  - privacy
+  - network
+  check: Identify device/user/project metadata sent to analytics endpoints.
+  evidence: telemetry payload construction, endpoint URLs
+  escalate_when: Source code, prompts, file paths, secrets, or sensitive data are
+    uploaded.
+  remediation: Minimize telemetry and document data categories/retention.
+- id: DA-009
+  domain: SR-DA
+  title: Sensitive data written to logs/temp/cache
+  lifecycle:
+  - runtime
+  - build
+  tags:
+  - privacy
+  - integrity
+  check: Trace secrets, tokens, user data, and source contents into persistent logs/cache.
+  evidence: logging calls, temp paths, cache writes
+  escalate_when: Secrets are stored with weak permissions or retained unnecessarily.
+  remediation: Redact, minimize, encrypt where appropriate, and bound retention.
+- id: DA-010
+  domain: SR-DA
+  title: Unexpected project/source upload
+  lifecycle:
+  - runtime
+  - agent-mediated
+  tags:
+  - exfiltration
+  - source-compromise
+  check: Trace source files, prompts, diffs, logs, and artifacts into external services.
+  evidence: HTTP clients, upload code, request payloads
+  escalate_when: Upload occurs without user awareness or task necessity.
+  remediation: Require explicit data-flow disclosure and minimize uploaded content.
+- id: RT-001
+  domain: SR-RT
+  title: Cross-process memory access
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - process
+  check: Inspect ptrace, process memory APIs, debugger interfaces, handle duplication.
+  evidence: OS APIs, permissions
+  escalate_when: Access targets unrelated privileged processes or credentials.
+  remediation: Use least privilege and prohibit cross-process inspection unless required.
+- id: RT-002
+  domain: SR-RT
+  title: Process injection or dynamic code injection
+  lifecycle:
+  - runtime
+  tags:
+  - execution
+  - process
+  check: Find DLL injection, ptrace writes, remote-thread creation, shared-library
+    injection.
+  evidence: native APIs, loader calls
+  escalate_when: Injection targets unrelated processes or security-sensitive software.
+  remediation: Remove injection capability or strictly scope to a controlled extension
+    model.
+- id: RT-003
+  domain: SR-RT
+  title: API hooking or interception
+  lifecycle:
+  - runtime
+  tags:
+  - process
+  - data-access
+  check: Inspect userland/system API hooks and interception layers.
+  evidence: hook registration, preload, detours
+  escalate_when: Hooks capture credentials/input or security-control APIs.
+  remediation: Use documented extension points and narrow hooks.
+- id: RT-004
+  domain: SR-RT
+  title: Unsafe localhost or Unix-socket API
+  lifecycle:
+  - runtime
+  tags:
+  - ipc
+  - authorization
+  check: Inspect local services, sockets, named pipes, localhost HTTP endpoints, and
+    auth.
+  evidence: server bind, socket permissions, auth middleware
+  escalate_when: Any local process can invoke privileged actions without authentication.
+  remediation: Authenticate/authorize local callers and restrict socket permissions.
+- id: RT-005
+  domain: SR-RT
+  title: IPC spoofing or confused deputy
+  lifecycle:
+  - runtime
+  tags:
+  - ipc
+  - privilege-escalation
+  check: Trace caller identity through IPC and privileged operations.
+  evidence: IPC protocol, peer credentials, authorization checks
+  escalate_when: Untrusted process can cause privileged service to act on its behalf.
+  remediation: Bind authorization to peer identity and requested resource.
+- id: RT-006
+  domain: SR-RT
+  title: Unsafe temporary file / symlink race
+  lifecycle:
+  - runtime
+  - install
+  - update
+  tags:
+  - integrity
+  check: Inspect temp file creation, symlink handling, permissions, and TOCTOU.
+  evidence: temp APIs, open flags, path construction
+  escalate_when: Privileged process follows attacker-controlled path/symlink.
+  remediation: Use secure temp APIs, exclusive creation, canonicalization.
+- id: RT-007
+  domain: SR-RT
+  title: Sandbox escape or isolation failure
+  lifecycle:
+  - runtime
+  - containerized
+  - sandboxed
+  tags:
+  - host-compromise
+  check: Inspect namespace, capability, device, syscall, mount, browser sandbox, VM
+    boundary assumptions.
+  evidence: runtime config, Docker/VM flags, sandbox policy
+  escalate_when: Untrusted code can access host resources or privileged interfaces.
+  remediation: Reduce capabilities and validate isolation boundary.
+- id: RT-008
+  domain: SR-RT
+  title: Docker socket or container-management control
+  lifecycle:
+  - runtime
+  - containerized
+  tags:
+  - host-compromise
+  - privilege-escalation
+  check: Check Docker socket/daemon APIs exposed to application containers.
+  evidence: Compose/Dockerfile/runtime config
+  escalate_when: Container can create privileged host-mounted containers.
+  remediation: Remove socket access or use constrained control planes.
+- id: RT-009
+  domain: SR-RT
+  title: Host namespace/device exposure
+  lifecycle:
+  - runtime
+  - containerized
+  tags:
+  - host-compromise
+  - data-access
+  check: Inspect host PID/IPC/network, devices, host mounts, capabilities.
+  evidence: container runtime configuration
+  escalate_when: Host process/device access is unnecessary and exposed.
+  remediation: Use isolated namespaces and least-privilege devices/capabilities.
+- id: RT-010
+  domain: SR-RT
+  title: VM/shared resource boundary weakness
+  lifecycle:
+  - runtime
+  - sandboxed
+  tags:
+  - isolation
+  check: Inspect shared folders, clipboard, drag/drop, devices, guest additions, host
+    services.
+  evidence: VM config, integration settings
+  escalate_when: Untrusted guest can access sensitive host resources.
+  remediation: Disable unnecessary host integrations and isolate shares.
+- id: NW-001
+  domain: SR-NW
+  title: Unexpected outbound network connection
+  lifecycle:
+  - runtime
+  - build
+  - update
+  tags:
+  - network
+  check: Enumerate network clients, hard-coded endpoints, DNS lookups, and dynamic
+    URLs.
+  evidence: URL strings, HTTP/DNS client code
+  escalate_when: Destination is unrelated to documented functionality or data flow.
+  remediation: Remove, restrict, or document outbound destinations.
+- id: NW-002
+  domain: SR-NW
+  title: Sensitive data exfiltration path
+  lifecycle:
+  - runtime
+  - agent-mediated
+  tags:
+  - exfiltration
+  check: Trace secrets/source/user data into network payloads.
+  evidence: HTTP requests, serialization, upload functions
+  escalate_when: Sensitive data reaches external endpoint without explicit user purpose.
+  remediation: Minimize payloads, add policy enforcement, redact secrets.
+- id: NW-003
+  domain: SR-NW
+  title: Covert or low-visibility data channel
+  lifecycle:
+  - runtime
+  tags:
+  - exfiltration
+  - evasion
+  check: Inspect DNS labels, unusual headers, timing/periodic beacons, encoded payloads.
+  evidence: DNS/API construction, timers
+  escalate_when: Channel can transmit arbitrary local data to third party.
+  remediation: Remove covert transport and make telemetry explicit.
+- id: NW-004
+  domain: SR-NW
+  title: C2-like periodic communication
+  lifecycle:
+  - runtime
+  tags:
+  - network
+  - persistence
+  check: Inspect periodic callbacks/heartbeats tied to remote commands or payload
+    retrieval.
+  evidence: timers, polling loops, command handlers
+  escalate_when: Remote server can issue local commands or retrieve executable content.
+  remediation: Remove remote command channel; authenticate and scope remote operations.
+- id: NW-005
+  domain: SR-NW
+  title: Inbound management/debug service exposure
+  lifecycle:
+  - runtime
+  tags:
+  - network
+  - authorization
+  check: Check listening sockets, debug/admin endpoints, bind addresses and authentication.
+  evidence: server bind/config, route definitions
+  escalate_when: Service exposes privileged actions without strong auth or binds publicly.
+  remediation: Bind locally where possible and enforce authentication/authorization.
+- id: NW-006
+  domain: SR-NW
+  title: Internal network scanning capability
+  lifecycle:
+  - runtime
+  tags:
+  - network-discovery
+  check: Identify socket scans, port sweeps, subnet iteration, service discovery.
+  evidence: network APIs, loops, scanners
+  escalate_when: Capability is reachable from attacker-controlled input or used without
+    documented need.
+  remediation: Remove or heavily restrict scanning features.
+- id: NW-007
+  domain: SR-NW
+  title: Lateral movement via inherited identity
+  lifecycle:
+  - runtime
+  tags:
+  - lateral-movement
+  - credential-access
+  check: Trace use of SSH/cloud/VPN/service credentials to other hosts or services.
+  evidence: SSH clients, cloud SDKs, service APIs
+  escalate_when: Agent/process can pivot to unrelated internal assets.
+  remediation: Use task-bound identities and network segmentation.
+- id: NW-008
+  domain: SR-NW
+  title: TLS/certificate verification disabled
+  lifecycle:
+  - runtime
+  - update
+  tags:
+  - network
+  - integrity
+  check: Find certificate validation bypass, insecure TLS modes, skip verification.
+  evidence: HTTP/TLS client options
+  escalate_when: Used for updates, credential transport, or privileged APIs.
+  remediation: Enable strict verification and pin only when justified.
+- id: NW-009
+  domain: SR-NW
+  title: Proxy/DNS/hosts manipulation
+  lifecycle:
+  - install
+  - runtime
+  tags:
+  - network
+  - integrity
+  check: Trace proxy, resolver, hosts, route modifications.
+  evidence: OS config writes, privileged commands
+  escalate_when: Can redirect security-sensitive domains or updates.
+  remediation: Restrict configuration changes and verify intended values.
+- id: NW-010
+  domain: SR-NW
+  title: Remote content used as executable/plugin input
+  lifecycle:
+  - runtime
+  - update
+  - agent-mediated
+  tags:
+  - execution
+  - network
+  check: Trace remote responses into eval/import/plugin loading/template execution.
+  evidence: fetch → parse/load/exec flow
+  escalate_when: Remote source controls code or tool behavior without integrity/authenticity
+    verification.
+  remediation: Treat remote content as data and verify signed/versioned plugins.
+- id: AS-001
+  domain: SR-AS
+  title: Command injection
+  lifecycle:
+  - runtime
+  - build
+  tags:
+  - execution
+  - injection
+  check: Trace attacker-controlled input into shell/command execution without safe
+    argument handling.
+  evidence: source-to-sink path, shell APIs
+  escalate_when: Remote input reaches shell interpreter or privileged command.
+  remediation: Use direct exec with argument arrays and strict validation.
+- id: AS-002
+  domain: SR-AS
+  title: Code injection / dynamic evaluation
+  lifecycle:
+  - runtime
+  - build
+  tags:
+  - execution
+  - injection
+  check: Inspect eval/exec/dynamic import/template execution and generated code.
+  evidence: dynamic-eval APIs, code strings
+  escalate_when: Untrusted input influences executable code.
+  remediation: Replace with structured APIs and allow-lists.
+- id: AS-003
+  domain: SR-AS
+  title: SQL/NoSQL injection
+  lifecycle:
+  - runtime
+  tags:
+  - injection
+  check: Trace untrusted values into queries/aggregation expressions.
+  evidence: query construction, DB calls
+  escalate_when: Remote input alters query structure.
+  remediation: Use parameterized queries and schema validation.
+- id: AS-004
+  domain: SR-AS
+  title: Path traversal / arbitrary file access
+  lifecycle:
+  - runtime
+  tags:
+  - data-access
+  - integrity
+  check: Inspect user-controlled path joins, archive extraction, file download/upload
+    paths.
+  evidence: path APIs, archive libraries
+  escalate_when: Input can escape intended directory or target sensitive files.
+  remediation: Canonicalize paths and enforce root containment.
+- id: AS-005
+  domain: SR-AS
+  title: SSRF / server-side request forgery
+  lifecycle:
+  - runtime
+  tags:
+  - network
+  - data-access
+  check: Trace attacker-controlled URLs into HTTP clients or cloud metadata access.
+  evidence: URL parser, HTTP client, allow-list
+  escalate_when: Internal/admin/metadata networks are reachable.
+  remediation: Use strict destination allow-lists and egress controls.
+- id: AS-006
+  domain: SR-AS
+  title: Unsafe deserialization / parser execution
+  lifecycle:
+  - runtime
+  tags:
+  - execution
+  - injection
+  check: Inspect pickle-like, native serialization, YAML/object mappers, plugin/state
+    restoration.
+  evidence: deserializer calls and input source
+  escalate_when: Untrusted content can instantiate executable or privileged objects.
+  remediation: Use data-only serialization and explicit schemas.
+- id: AS-007
+  domain: SR-AS
+  title: Authentication failure
+  lifecycle:
+  - runtime
+  tags:
+  - authorization
+  - identity-compromise
+  check: Inspect credential verification, session lifecycle, default credentials,
+    reset flows.
+  evidence: auth middleware, token validation, config
+  escalate_when: Unauthenticated attacker can reach protected functionality.
+  remediation: Use strong authentication and secure session/token handling.
+- id: AS-008
+  domain: SR-AS
+  title: Authorization / tenant isolation failure
+  lifecycle:
+  - runtime
+  tags:
+  - authorization
+  - integrity
+  check: Trace resource ownership and role checks for every privileged action.
+  evidence: authorization middleware, resource lookup
+  escalate_when: User can access/modify another user/tenant/admin resource.
+  remediation: Enforce server-side object/resource authorization.
+- id: AS-009
+  domain: SR-AS
+  title: File upload / archive extraction risk
+  lifecycle:
+  - runtime
+  tags:
+  - integrity
+  - execution
+  check: Inspect uploaded filename/type handling, extraction paths, permissions, post-upload
+    execution.
+  evidence: upload handlers, archive libraries
+  escalate_when: Attacker controls executable location or traversal path.
+  remediation: Store outside executable paths, validate types, enforce quotas.
+- id: AS-010
+  domain: SR-AS
+  title: Memory-safety vulnerability in native code
+  lifecycle:
+  - runtime
+  tags:
+  - execution
+  - integrity
+  check: Inspect unsafe/native code for bounds, lifetime, integer overflow, FFI contracts.
+  evidence: C/C++/unsafe Rust code, sanitizers/tests
+  escalate_when: Attacker-controlled input reaches memory-unsafe operation.
+  remediation: Use safe APIs, bounds checks, fuzzing, sanitizers, and memory-safe
+    components.
+- id: AG-001
+  domain: SR-AG
+  title: Indirect prompt injection in repository/content
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - integrity
+  check: Inspect untrusted project text that contains instructions likely to be followed
+    as agent commands.
+  evidence: README/comments/issues/docs/tests/fixtures
+  escalate_when: Content can cause high-impact tool calls or secret access.
+  remediation: Treat repository content as untrusted data and preserve instruction
+    hierarchy.
+- id: AG-002
+  domain: SR-AG
+  title: Context poisoning
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - integrity
+  check: Check retrieval/context assembly for untrusted sources merged without provenance
+    or trust labels.
+  evidence: RAG/retrieval/context builder
+  escalate_when: Low-trust content can override trusted instructions or policy.
+  remediation: Tag provenance and enforce instruction/data separation.
+- id: AG-003
+  domain: SR-AG
+  title: Persistent memory poisoning
+  lifecycle:
+  - agent-mediated
+  tags:
+  - persistence
+  - integrity
+  check: Inspect memory write sources, scope, expiry, and cross-session reuse.
+  evidence: memory APIs/schema, persistence layer
+  escalate_when: Untrusted project content can persist instructions affecting future
+    tasks.
+  remediation: Require trusted provenance, scoped memory, and expiry/review.
+- id: AG-004
+  domain: SR-AG
+  title: Tool output poisoning
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - integrity
+  check: Trace tool responses back into model context and later tool decisions.
+  evidence: tool handlers, response parsing, prompt assembly
+  escalate_when: Untrusted output can cause privileged follow-up actions.
+  remediation: Label tool output untrusted and validate before action.
+- id: AG-005
+  domain: SR-AG
+  title: Tool description/schema poisoning
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  check: Inspect tool metadata and whether descriptions/examples are trusted instructions.
+  evidence: MCP/tool registration, schemas
+  escalate_when: Tool metadata can direct the model to execute unrelated privileged
+    operations.
+  remediation: Treat tool metadata as untrusted and centrally define policy.
+- id: AG-006
+  domain: SR-AG
+  title: Tool shadowing / namespace collision
+  lifecycle:
+  - agent-mediated
+  tags:
+  - integrity
+  - execution
+  check: Check duplicate names, aliases, dynamic registration, precedence, and hidden
+    tools.
+  evidence: tool registry, MCP config
+  escalate_when: Attacker-controlled tool can masquerade as a trusted capability.
+  remediation: Use unique identities, provenance, and explicit allow-lists.
+- id: AG-007
+  domain: SR-AG
+  title: Excessive agent agency
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - integrity
+  check: Inventory high-impact tools and compare with user task scope/approval requirements.
+  evidence: tool list, policies, action gates
+  escalate_when: Agent can autonomously perform irreversible or external side effects
+    without confirmation.
+  remediation: Require least privilege and approval for high-impact actions.
+- id: AG-008
+  domain: SR-AG
+  title: Delegated identity / privilege abuse
+  lifecycle:
+  - agent-mediated
+  tags:
+  - credential-access
+  - identity-compromise
+  check: Trace user/OAuth/Git/SSH/cloud identities inherited by agent and tools.
+  evidence: credential wiring, OAuth scopes, environment
+  escalate_when: Hijacked task can reuse broad user privileges to unrelated resources.
+  remediation: Use scoped short-lived task identities.
+- id: AG-009
+  domain: SR-AG
+  title: Secret discovery induced by agent instructions
+  lifecycle:
+  - agent-mediated
+  tags:
+  - credential-access
+  check: Check whether prompts/content can cause the agent to search common secret
+    locations.
+  evidence: tool policy, file search, command templates
+  escalate_when: Agent can access host credentials outside explicit task scope.
+  remediation: Deny sensitive paths by default and require purpose-specific access.
+- id: AG-010
+  domain: SR-AG
+  title: Untrusted output flows into dangerous sink
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - injection
+  check: Trace model/tool output into shell, SQL, HTTP, file paths, browser, Git,
+    deployment.
+  evidence: data/control-flow path
+  escalate_when: No context-specific validation or policy gate exists before side
+    effect.
+  remediation: Use structured tool calls, validation, sandboxing, and approval gates.
+- id: AG-011
+  domain: SR-AG
+  title: Approval/confirmation bypass
+  lifecycle:
+  - agent-mediated
+  tags:
+  - execution
+  - integrity
+  check: Inspect whether command splitting, aliases, batching, encoding, indirect
+    tools, or delayed actions bypass approvals.
+  evidence: approval logic, tool wrappers
+  escalate_when: High-impact action can execute without a corresponding human-approved
+    intent.
+  remediation: Make policy decisions on normalized action semantics, not raw strings.
+- id: AG-012
+  domain: SR-AG
+  title: Automatic Git write or CI mutation
+  lifecycle:
+  - agent-mediated
+  tags:
+  - integrity
+  - supply-chain
+  check: Inspect auto-commit/push/PR and CI config modifications.
+  evidence: Git tool, workflow policies
+  escalate_when: Agent can alter trusted branches or release paths without review.
+  remediation: Require explicit approval and protected branches/checks.
+- id: AG-013
+  domain: SR-AG
+  title: MCP token/scope exposure
+  lifecycle:
+  - agent-mediated
+  tags:
+  - credential-access
+  check: Inspect MCP auth token storage, propagation, scope, and logging.
+  evidence: MCP client/server auth config
+  escalate_when: Tokens are exposed to model context, logs, other tools, or unrelated
+    servers.
+  remediation: Use scoped tokens and keep credentials outside model-visible content.
+- id: AG-014
+  domain: SR-AG
+  title: Shadow or untrusted MCP server
+  lifecycle:
+  - agent-mediated
+  tags:
+  - supply-chain
+  - execution
+  check: Inspect MCP server origin, registry/source, local/global configuration, and
+    dynamic registration.
+  evidence: MCP config, server command, package source
+  escalate_when: Untrusted server executes with host credentials or broad filesystem
+    access.
+  remediation: Allow-list servers, pin versions, isolate servers, audit provenance.
+- id: AG-015
+  domain: SR-AG
+  title: Cross-agent trust propagation
+  lifecycle:
+  - agent-mediated
+  tags:
+  - integrity
+  - identity-compromise
+  check: Trace instructions, identity assertions, memory, tool results, and approval
+    status between agents.
+  evidence: A2A/Multi-agent messages, metadata
+  escalate_when: One compromised agent can cause another to perform trusted actions
+    without re-authorization.
+  remediation: Re-validate provenance, identity, scope, and approvals at each agent
+    boundary.
+- id: AG-016
+  domain: SR-AG
+  title: Missing agent audit trail or runtime control
+  lifecycle:
+  - agent-mediated
+  tags:
+  - integrity
+  - evasion
+  check: Check whether tool calls, approvals, the identity used, and side effects are
+    logged with enough fidelity to reconstruct an action.
+  evidence: tool-call logs, approval records, policy enforcement points
+  escalate_when: High-impact actions cannot be attributed or reconstructed, or logs
+    can be altered by the agent.
+  remediation: Enforce policy checks outside the model and keep append-only action
+    logs with identity, intent, target, and result.

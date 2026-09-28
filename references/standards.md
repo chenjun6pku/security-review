@@ -13,7 +13,7 @@ Use the current Agent Skills structure: required `SKILL.md`; optional `agents/`,
 
 ## Application and software security
 
-- OWASP ASVS 5.0.0 (May 2025): https://owasp.org/www-project-application-security-verification-standard/
+- OWASP ASVS 5.0.0 (May 2025): https://owasp.org/www-project-application-security-verification-standard
 - OWASP Top 10 2025: https://top10.owasp.org/2025/
 
 Use ASVS requirements as testable control anchors rather than treating the Top 10 as an exhaustive test checklist.
@@ -22,7 +22,7 @@ Use ASVS requirements as testable control anchors rather than treating the Top 1
 
 - OWASP AISVS 1.0 (June 2026): https://owasp.github.io/www-project-artificial-intelligence-security-verification-standard-aisvs-docs/
 - OWASP GenAI LLM Top 10 2026 (August 2026): https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/
-- OWASP Top 10 for Agentic Applications 2026: https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-ai-security/
+- OWASP Top 10 for Agentic Applications 2026: OWASP GenAI Security Project resource hub, https://genai.owasp.org/
 - OWASP MCP Top 10 (2025): https://owasp.org/projects/mcp-top-10
 - OWASP Agent Control Standard (September 2026): https://genai.owasp.org/resource/agent-control-standard-acs/
 - OWASP Secure MCP Server Development guide (February 2026): https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/
@@ -41,8 +41,7 @@ Use SSDF for lifecycle/process expectations, SLSA for source/build provenance an
 
 ## Agent standards work
 
-- NIST AI Agent Standards Initiative (announced February 2026): https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure
-- NIST software-agent identity and authorization concept work (February 2026): https://www.nist.gov/news-events/news/2026/02/new-concept-paper-on-identity-and-authority-of-software-agents
+- NIST AI Agent Standards Initiative (announced February 2026), including its software-agent identity and authorization concept work: https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure
 
 Treat these as emerging standards work. Do not claim conformance to draft or initiative materials unless an explicit published requirement supports the claim.
 
@@ -55,4 +54,6 @@ When maintaining the Skill:
 3. add new rules without changing existing IDs' meanings;
 4. deprecate rules instead of silently reusing IDs;
 5. add a test scenario for material new attack classes;
-6. rerun Skill validation and rule/schema checks.
+6. re-verify every link above and prefer stable project hubs over announcement
+   or blog deep links, which change without notice;
+7. rerun Skill validation and rule/schema checks.

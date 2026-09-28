@@ -4,18 +4,23 @@
 Usage: python scripts/project_facts.py [REPO]
 
 Outputs JSON describing detected languages, package manifests, build files,
-container/CI files, agent/MCP hints, and likely sensitive-file names.
+manifest ecosystems, container/CI files, agent/MCP hints, and likely
+sensitive-file names. Cache and virtualenv directories are skipped; keep the
+ignore list in sync with scripts/static_security_scan.py.
 """
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
 from collections import Counter
 from pathlib import Path
 
 MAX_FILES = 200_000
+IGNORED_DIRS = {
+    ".git", "node_modules", ".venv", "venv", "__pycache__",
+    ".mypy_cache", ".ruff_cache", ".pytest_cache", ".tox",
+}
 TEXT_EXTENSIONS = {
     ".py", ".js", ".jsx", ".ts", ".tsx", ".rs", ".go", ".java", ".kt", ".kts",
     ".cs", ".c", ".cc", ".cpp", ".h", ".hpp", ".swift", ".rb", ".php", ".sh",
@@ -50,13 +55,21 @@ BUILD_FILES = {
 }
 
 
+def manifest_ecosystem(name: str) -> str | None:
+    """Return the ecosystem for a manifest/lockfile name, or None."""
+    for key, ecosystem in MANIFESTS.items():
+        if name == key or (key.startswith("*") and name.endswith(key[1:])):
+            return ecosystem
+    return None
+
+
 def iter_files(root: Path):
     count = 0
     for p in root.rglob("*"):
         if p.is_symlink() or not p.is_file():
             continue
         parts = set(p.parts)
-        if ".git" in parts or ".venv" in parts or "node_modules" in parts:
+        if any(part in IGNORED_DIRS for part in parts):
             continue
         count += 1
         if count > MAX_FILES:
@@ -95,12 +108,15 @@ def main() -> int:
     container_files = []
     agent_hints = []
     sensitive_names = []
+    ecosystems = set()
 
     for p in files:
         rel = p.relative_to(root).as_posix()
         name = p.name
-        if name in MANIFESTS or any(name == k for k in MANIFESTS if not k.startswith("*")):
+        ecosystem = manifest_ecosystem(name)
+        if ecosystem:
             manifests.append(rel)
+            ecosystems.add(ecosystem)
         if name in BUILD_FILES or name.startswith("Makefile") or name.startswith("Dockerfile"):
             build_files.append(rel)
         if rel.startswith(".github/workflows/") or "/.github/workflows/" in rel or name in {"Jenkinsfile", ".gitlab-ci.yml"}:
@@ -120,6 +136,7 @@ def main() -> int:
         "root": str(root),
         "file_count": len(files),
         "languages": sorted(set(languages)),
+        "ecosystems": sorted(ecosystems),
         "top_extensions": extensions.most_common(12),
         "manifests": sorted(set(manifests)),
         "build_files": sorted(set(build_files)),

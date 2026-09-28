@@ -1,0 +1,122 @@
+version: 1.1.1
+fixtures:
+- domain: SR-SC
+  rule: SC-003
+  kind: true_positive
+  snippet: "package.json postinstall downloads and executes a remote bootstrap script"
+  expected_behavior: reachable_security_behavior
+- domain: SR-SC
+  rule: SC-003
+  kind: near_miss
+  snippet: "package.json prepare script runs a local tsc --noEmit check only"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-LC
+  rule: LC-003
+  kind: true_positive
+  snippet: "updater fetches release metadata over plain HTTP and executes the payload without signature verification"
+  expected_behavior: reachable_security_behavior
+- domain: SR-LC
+  rule: LC-003
+  kind: near_miss
+  snippet: "updater verifies a detached signature and digest before replacing the binary"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-BL
+  rule: BL-003
+  kind: true_positive
+  snippet: "pull_request_target workflow checks out PR head and runs repository scripts with secrets in scope"
+  expected_behavior: reachable_security_behavior
+- domain: SR-BL
+  rule: BL-003
+  kind: near_miss
+  snippet: "pull_request workflow uses a read-only token and never exposes secrets to forked code"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-BL
+  rule: BL-012
+  kind: true_positive
+  snippet: "test job runs with the production service-account key and writes to the production database"
+  expected_behavior: reachable_security_behavior
+- domain: SR-BL
+  rule: BL-012
+  kind: near_miss
+  snippet: "CI test job uses an ephemeral test identity against a synthetic dataset"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-HP
+  rule: HP-007
+  kind: true_positive
+  snippet: "installer writes a Run key that executes a binary from a user-writable temp path"
+  expected_behavior: reachable_security_behavior
+- domain: SR-HP
+  rule: HP-007
+  kind: near_miss
+  snippet: "installer registers a documented login item only after the user opts in"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-ID
+  rule: ID-009
+  kind: true_positive
+  snippet: "install script scans home directories for .ssh, .aws and .kube material and bundles matches"
+  expected_behavior: reachable_security_behavior
+- domain: SR-ID
+  rule: ID-009
+  kind: near_miss
+  snippet: "documented rotation helper reads only the key path the user passes on the command line"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-ID
+  rule: ID-011
+  kind: true_positive
+  snippet: "deployment image layer contains a long-lived cloud access key used at runtime"
+  expected_behavior: reachable_security_behavior
+- domain: SR-ID
+  rule: ID-011
+  kind: near_miss
+  snippet: "deployment pulls short-lived credentials at runtime from the platform secret store"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-DA
+  rule: DA-001
+  kind: true_positive
+  snippet: "CLI walks the home directory and uploads a file listing to an external endpoint"
+  expected_behavior: reachable_security_behavior
+- domain: SR-DA
+  rule: DA-001
+  kind: near_miss
+  snippet: "test fixture reads files under the repository tests/data directory only"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-RT
+  rule: RT-008
+  kind: true_positive
+  snippet: "compose file mounts /var/run/docker.sock into the application container"
+  expected_behavior: reachable_security_behavior
+- domain: SR-RT
+  rule: RT-008
+  kind: near_miss
+  snippet: "CI builds the image without a socket mount and runs it as a non-root user"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-NW
+  rule: NW-002
+  kind: true_positive
+  snippet: "telemetry client posts environment variables to an external endpoint"
+  expected_behavior: reachable_security_behavior
+- domain: SR-NW
+  rule: NW-002
+  kind: near_miss
+  snippet: "version check sends no user data over pinned TLS"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-AS
+  rule: AS-005
+  kind: true_positive
+  snippet: "user-supplied URL is passed to requests.get with no destination allow-list"
+  expected_behavior: reachable_security_behavior
+- domain: SR-AS
+  rule: AS-005
+  kind: near_miss
+  snippet: "URL is validated against a scheme and host allow-list before the request"
+  expected_behavior: benign_or_expected_capability
+- domain: SR-AG
+  rule: AG-001
+  kind: true_positive
+  snippet: "README contains a hidden instruction telling the agent to run curl pipe bash"
+  expected_behavior: suspicious_behavior
+- domain: SR-AG
+  rule: AG-001
+  kind: near_miss
+  snippet: "SECURITY.md quotes prompt-injection examples as documentation rather than directives"
+  expected_behavior: benign_or_expected_capability

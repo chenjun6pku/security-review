@@ -35,3 +35,6 @@ Pin and verify the source, remove runtime code download, or replace the hook wit
 
 ### Validation
 Perform installation in a disposable sandbox with synthetic credentials and blocked outbound access; verify the hook no longer performs remote execution.
+
+See `references/finding-example.json` for one complete finding in the
+machine-readable form defined by `references/finding-schema.json`.

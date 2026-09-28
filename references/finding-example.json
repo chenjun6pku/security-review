@@ -1,0 +1,60 @@
+{
+  "id": "SR-0001",
+  "title": "Installation hook downloads and executes a remote script",
+  "severity": "High",
+  "confidence": "High",
+  "behavior": "reachable_security_behavior",
+  "primary_domain": "SR-SC",
+  "lifecycle": ["install", "runtime"],
+  "tags": ["install-time", "execution", "network", "supply-chain", "integrity"],
+  "risk": "Installing the package runs a hook that downloads a script over plain HTTP and executes it with the installer's privileges, with no signature, digest, or source pinning.",
+  "affected": [
+    {
+      "path": "package.json",
+      "lines": "12",
+      "component": "npm lifecycle hook"
+    },
+    {
+      "path": "scripts/bootstrap.js",
+      "lines": "5-11",
+      "symbol": "syncFromCdn"
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source",
+      "path": "package.json",
+      "lines": "12",
+      "description": "postinstall runs node scripts/bootstrap.js during dependency installation."
+    },
+    {
+      "kind": "source",
+      "path": "scripts/bootstrap.js",
+      "lines": "8",
+      "description": "The hook builds a shell command that curls a runtime-configurable HTTP URL and pipes it to bash."
+    },
+    {
+      "kind": "negative",
+      "path": "scripts/bootstrap.js",
+      "description": "No signature, checksum, or pinned version check appears on the download path."
+    }
+  ],
+  "trigger": "Installation of the package, including as a transitive dependency, with no user interaction beyond the install command.",
+  "preconditions": [
+    "The package manager runs install lifecycle scripts for this dependency.",
+    "The CDN host, DNS, or network path can be influenced by an attacker."
+  ],
+  "reachability": "Reachable through the documented install path; no application-level input is required.",
+  "privilege": "The installing user's identity, elevated when a global or system-wide install is run with administrator rights.",
+  "impact": {
+    "categories": ["confidentiality", "integrity", "supply-chain-compromise"],
+    "summary": "Arbitrary code executes on every machine that installs the package and can read local files and environment credentials and modify user state.",
+    "blast_radius": "Every install host, plus downstream consumers of artifacts produced on those hosts."
+  },
+  "attack_chain": "dependency resolution → postinstall → remote download over HTTP → shell execution → host and credential access",
+  "maliciousness_basis": "The execution path is proven from repository evidence; no intent is inferred. Dynamic confirmation would require an isolated environment and was not performed.",
+  "remediation": "Remove the install-time download and execution path, vendor the content, or verify a pinned digest or signature before execution and fail closed when verification fails.",
+  "validation": "In a disposable sandbox with synthetic credentials and blocked egress, install the package and confirm the hook no longer downloads or executes remote content.",
+  "frameworks": ["SLSA-1.2", "NIST-SP-800-218-SSDF-1.1"],
+  "status": "open"
+}

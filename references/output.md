@@ -16,13 +16,13 @@ Do not use an overall security score.
 ## Finding format
 
 ```markdown
-## [SR-XXXX] Title
+## [SR-0001] Title
 
 - Severity: High
 - Confidence: High
 - Behavior: reachable_security_behavior
-- Primary domain: SR-XX
-- Lifecycle: install
+- Primary domain: SR-SC
+- Lifecycle: install, runtime
 - Tags: execution, credential-access, exfiltration
 - Affected: path/to/file:line
 
@@ -51,6 +51,15 @@ Do not use an overall security score.
 ### Validation
 <How to verify the fix without exposing secrets or causing harmful side effects.>
 ```
+
+Finding IDs are sequential per report in `SR-0001` form. `Lifecycle` lists every
+applicable phase with the primary phase first, and the remaining fields mirror
+`references/finding-schema.json`.
+
+The Markdown report is the primary deliverable. When a machine-readable artifact
+is requested or useful, also emit the findings as a JSON array that conforms to
+`references/finding-schema.json`; `references/finding-example.json` shows one
+complete finding.
 
 ## Severity ordering
 

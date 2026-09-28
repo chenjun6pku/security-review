@@ -39,6 +39,14 @@ Use one primary domain per finding. Use lifecycle, asset, impact, behavior, expo
 
 `local`, `local-user-assisted`, `network-facing`, `install-time`, `build-time`, `ci`, `agent-mediated`, `supply-chain`, `containerized`, `sandboxed`
 
+## Rule phase extensions
+
+`rules.yaml` lifecycle values may use the lifecycle tags above plus these review modes when a rule is specifically about an agent-mediated or isolated environment: `agent-mediated`, `containerized`, `sandboxed`. Findings from these rules must still be mapped to the closest real lifecycle phase in reports, with the mode recorded in the report's lifecycle coverage table.
+
+## Rule-level control tags
+
+Rules may use these technique/control tags in addition to the tag vocabularies above: `network`, `injection`, `authorization`, `isolation`.
+
 ## Trust-boundary classes
 
 1. `untrusted-content → agent-context`
