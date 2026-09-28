@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.3 — 2026-09-28
+
+- The default deliverable is now a security issue list instead of a full report: header (target, review mode, verdict, counts), one summary table per severity group covering every issue, one 8-12 line detail card per issue, and a closing coverage-and-limitations block that must state a limitation.
+- Detail cards use nine practical fields: 危险等级 / 置信度 / 触发条件 / 原因 / 危害 / 性质 / 证据 / 修复 / 验证. Attack-chain lines are optional and only used when a path crosses components. Domain, lifecycle, and tags stay in the machine-readable findings JSON.
+- `references/report-example.md` is now a complete minimal issue list, and the extended full report (document control, system model, lifecycle table, framework crosswalk, appendices) became an opt-in tier that reuses the issue list as its body.
+- `scripts/validate_report.py` was rewritten for the list contract: it checks the header fields, severity tables, one-time coverage of every issue ID, declared-versus-actual counts, card fields, sequential IDs, and the mandatory limitation line.
+- Added validation scenarios 11 (issue list and language) and 12 (full report on request).
+
 ## 1.1.2 — 2026-09-28
 
 - Added an output language policy: human-readable report text follows the user's language, machine-readable tokens stay canonical English, and a report must use exactly one language profile. The terminology table lives in `references/output.md`.

@@ -3,7 +3,7 @@ name: security-review
 description: Perform an evidence-backed security review of a repository or software project across its lifecycle: dependencies and supply chain, build and CI, install and update, host and credentials, data, network, application code, containers, and agentic/AI/MCP systems. Use when asked to security review, audit, threat model, inspect a project for malicious or dangerous behavior, or assess a package, dependency, repository, or AI agent project before use. Separate dangerous capability from observed or confirmed malicious behavior and report confidence with actionable remediation.
 compatibility: Requires a repository/workspace inspection capability. Prefer read/search tools; use shell only for safe, non-destructive inspection. Dynamic execution should occur only in an isolated disposable environment when explicitly authorized and technically supported.
 metadata:
-  version: "1.1.2"
+  version: "1.1.3"
   standard: "Agent Skills"
   domain: "software-security"
   review_model: "lifecycle-attack-surface-risk-graph"
@@ -151,35 +151,32 @@ For each candidate finding, answer:
 
 Use `scripts/project_facts.py` and `scripts/static_security_scan.py` for deterministic inspection when useful. They MUST NOT execute project code.
 
-### 7. Report findings using the required schema
+### 7. Report findings as a security issue list
 
-Produce the Markdown report defined by `references/report-template.md` and `references/output.md`; `references/report-example.md` shows a minimal complete report. When a machine-readable finding list is requested or useful, emit JSON that conforms to `references/finding-schema.json` (see `references/finding-example.json`) alongside the report. Use `references/remediation.md` for remediation patterns, and read `references/rule-authoring.md` when adding or modifying detection rules.
+Produce the issue list defined by `references/report-template.md` and `references/output.md`: a short header (target, review mode, verdict, counts), one summary table per severity group covering every issue, one detail card per issue, and a closing coverage-and-limitations block. `references/report-example.md` shows a minimal complete list. Produce the extended full report only when the user asks for a report, audit, or compliance evidence; the issue list remains the body and the extra sections become appendices. When a machine-readable finding list is requested or useful, emit JSON that conforms to `references/finding-schema.json` (see `references/finding-example.json`). Use `references/remediation.md` for remediation patterns, and read `references/rule-authoring.md` when adding or modifying detection rules.
 
 Output language and summary:
 
-- Write every human-readable part of the report in the language of the user's request. Keep machine-readable tokens in canonical English: domain IDs, lifecycle values, tags, `severity`/`confidence`/`behavior` values, JSON field names, paths, symbols, commands, and framework identifiers.
-- Localize headings and field labels with the terminology table in `references/output.md`, and use exactly one language profile per report. Do not mix a localized report with unlocalized headings or field labels.
-- Open every report with a localized decision summary of 3-6 single-line bullets: verdict, highest severity and counts, top risks, fixability, and the key limitation. A decision verdict is expected; a numeric security score is not.
-- Validate the finished report with `python scripts/validate_report.py <report.md>` and fix what it reports.
+- Write every human-readable part in the language of the user's request. Keep machine-readable tokens in canonical English: issue IDs, lifecycle values, tags, `severity`/`confidence`/`behavior` values, JSON field names, paths, symbols, commands, and standard identifiers.
+- Localize headings and field labels with the terminology table in `references/output.md`, and use exactly one language profile per output. Do not mix a localized list with unlocalized headings or field labels.
+- The header carries the verdict and counts; the severity-grouped summary tables carry the complete inventory. A decision verdict is expected; a numeric security score is not.
+- Keep each detail card to the nine fields and roughly 8-12 lines, and do not restate the same content in another section. Add an attack-chain line only when the path crosses components.
+- Validate the finished file with `python scripts/validate_report.py <file.md>` and fix what it reports.
 
-Each finding MUST contain at least:
+Each issue card MUST contain at least:
 
-- stable ID
-- title
-- severity
-- primary domain
-- lifecycle phase
-- affected component/path
-- risk statement
-- evidence
-- trigger / reachability
-- impact
-- exploitability/preconditions
+- stable ID and title
+- risk level
 - confidence
-- behavior classification
-- remediation
+- trigger conditions and preconditions
+- root cause
+- impact
+- nature (flaw type, and whether malicious behavior is evidenced)
+- evidence with file/line references
+- fix
+- verification
 
-Use secondary tags instead of duplicating the same finding across multiple domains.
+Domain, lifecycle, and tags stay in the machine-readable findings JSON; do not duplicate the same issue across severity groups.
 
 ### 8. Build attack chains
 
@@ -315,8 +312,8 @@ Before completing the review:
 - confirm attack chains connect related findings
 - confirm severity and confidence are independent
 - confirm capability is not mislabeled as maliciousness
-- confirm finding IDs, lifecycle values, and fields match the report contract
-- confirm the report opens with the localized decision summary and uses one language profile consistently
-- confirm every finding includes an attack chain and a maliciousness statement
+- confirm summary tables cover every issue ID and the counts match the detail cards
+- confirm the output uses one language profile consistently
+- confirm every issue card carries the nine fields and the list ends with coverage and limitations, including a limitation
 - confirm agentic systems were reviewed for tool, identity, memory, MCP, auditability, and output-handling paths
 - list important blind spots and unavailable evidence

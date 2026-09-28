@@ -1,49 +1,54 @@
-# Minimal Example
+# acme-devtools Security Issue List
 
-## Decision summary (TL;DR)
+- Target: `acme-devtools@2.4.1` (repository snapshot; `package.json`)
+- Review mode: static read-only (no install, no execution, no network)
+- Verdict: do not install until the install hook is removed or pinned and verified
+- Summary counts: High 1 / Medium 1 / Low 0 / Informational 0 (2 issues)
 
-- Verdict: do not install until the install hook is removed or pinned and verified.
-- Highest severity: High; 1 High finding in this excerpt.
-- Key risks: installation-time remote code execution from an unpinned download.
+## High (1)
 
-## Executive summary
+| ID | Issue | Possible consequence |
+|---|---|---|
+| SR-0001 | Install hook downloads and executes a remote script | Any install runs attacker-controlled code with the installer's privileges (remote, no user interaction) |
 
-The project has one high-confidence installation-time code execution path and one medium-confidence agentic prompt-injection path. No persistence was found in the reviewed Linux startup locations. Dynamic execution was not performed on the host.
+## Medium (1)
 
-### [SR-0001] Installation hook executes downloaded code
+| ID | Issue | Possible consequence |
+|---|---|---|
+| SR-0002 | Agent-facing prompt injection in the README | A reviewing agent may execute the install script and expose credentials (requires an agent to read the file) |
 
-- Severity: High
+## Low / Informational (0)
+
+None.
+
+## Issue details
+
+### Issue 1 (SR-0001): Installation hook executes downloaded code
+
+- Risk level: High
 - Confidence: High
-- Behavior: reachable_security_behavior
-- Primary domain: SR-SC
-- Lifecycle: install
-- Tags: execution, supply-chain, network
-- Affected: `package.json:12`
+- Trigger: a normal `npm install`, including as a transitive dependency
+- Root cause: the `postinstall` hook builds a shell command that downloads a runtime-configurable URL and executes it without integrity verification
+- Impact: arbitrary code runs with the installer's privileges and can read local files and credentials
+- Nature: reachable implementation flaw; no hidden behavior or malicious intent is evidenced
+- Evidence: `package.json:12`, `scripts/bootstrap.js:44`
+- Fix: remove the download-and-execute step, vendor the content, or verify a pinned digest before execution
+- Verification: install in a disposable sandbox with synthetic credentials and blocked egress; confirm no remote execution
 
-### Risk
-The package manager executes an install hook that downloads a remote script and executes it with installer privileges.
+### Issue 2 (SR-0002): Prompt injection in repository text
 
-### Evidence
-- `package.json:12`: `postinstall` invokes a shell command.
-- `scripts/bootstrap.js:44`: downloads content from a runtime-configurable URL.
+- Risk level: Medium
+- Confidence: Medium
+- Trigger: an AI agent reads the README while reviewing or installing
+- Root cause: an HTML comment instructs the reader to run the install script and print `.env`
+- Impact: agent-mediated code execution and credential disclosure, depending on the agent's approval policy
+- Nature: suspicious content reachable only through agent behavior; no runtime channel in the package itself
+- Evidence: `README.md:17-23`
+- Fix: remove the comment and treat repository text as untrusted data in agent workflows
+- Verification: replay with an agent using a synthetic `.env` and confirm the instruction is reported, not followed
 
-### Trigger and reachability
-The path runs during a normal dependency installation. No special application runtime input is required.
+## Coverage and limitations
 
-### Impact
-The downloaded code inherits the install user's privileges and can access the local workspace and environment.
-
-### Attack chain
-`dependency resolution → postinstall → remote download → shell execution → local environment access`
-
-### Why this is / is not malicious
-The hook is reachable on the normal install path and lacks integrity verification. No hidden behavior or intent is claimed; the report classifies it as reachable security behavior rather than maliciousness.
-
-### Remediation
-Pin and verify the source, remove runtime code download, or replace the hook with a deterministic local build step.
-
-### Validation
-Perform installation in a disposable sandbox with synthetic credentials and blocked outbound access; verify the hook no longer performs remote execution.
-
-See `references/finding-example.json` for one complete finding in the
-machine-readable form defined by `references/finding-schema.json`.
+- Coverage: acquisition, dependency resolution, install, and runtime reviewed; no build, test, CI, update, or uninstall logic exists in this excerpt.
+- Checked, nothing found: no persistence mechanism, no dynamic code loading, and no outbound destination beyond the install-time download.
+- Limitation: static review only; no install, execution, or network capture was performed, so runtime behavior is unverified.

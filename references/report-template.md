@@ -1,93 +1,66 @@
-# Security Review Report
+# Security Issue List
 
-Report headings and field labels are localized per `references/output.md`; this
-template shows both profiles side by side. Use exactly one profile per report.
+The default deliverable. Headings and field labels are localized per
+`references/output.md`; this template shows both profiles side by side. Use
+exactly one profile per output. A minimal complete example is in
+`references/report-example.md`.
 
-## 结论摘要 (TL;DR) / Decision summary
+## 头部 / Header
 
+- 审查对象 / Target:
+- 审查方式 / Review mode:
 - 结论 / Verdict:
-- 最高严重度 / Highest severity:
-- 关键风险 / Top risks:
-- 可修复性 / Fixability:
-- 主要限制 / Key limitation:
+- 统计 / Summary counts: 高危 N / 中危 N / 低危 N / 信息 N（共 N 项）
 
-## 1. 执行摘要 / Executive summary
+## 高危（N） / High (N)
 
-- 范围 / Scope:
-- 项目类型 / Project type:
-- 审查模式 / Review mode: static / safe dynamic / mixed
-- 生命周期覆盖 / Lifecycle coverage:
-- 主要发现 / Material findings:
-- 主要攻击链 / Material attack chains:
-- 重要限制 / Important limitations:
+| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|
+| SR-0001 | | |
 
-## 2. 系统模型 / System model
+## 中危（N） / Medium (N)
 
-### 组件 / Components
+| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|
+| SR-0002 | | |
 
-### 入口点 / Entry points
+## 低危 / 信息（N） / Low / Informational (N)
 
-### 数据与资产 / Data and assets
+| 编号 / ID | 问题 / Issue | 可能导致 / Possible consequence |
+|---|---|---|
+| SR-0004 | | |
 
-### 身份与权限 / Identities and privileges
+## 问题详情 / Issue details
 
-### 外部依赖与服务 / External dependencies and services
+### 问题 1（SR-0001）：<title> / Issue 1 (SR-0001): <title>
 
-### 信任边界 / Trust boundaries
+- 危险等级 / Risk level:
+- 置信度 / Confidence:
+- 触发条件 / Trigger:
+- 原因 / Root cause:
+- 危害 / Impact:
+- 性质 / Nature:
+- 证据 / Evidence:
+- 修复 / Fix:
+- 验证 / Verification:
 
-## 3. 生命周期覆盖 / Lifecycle coverage
+## 覆盖与限制 / Coverage and limitations
 
-| 阶段 / Phase | 是否审查 / Reviewed | 证据 / Evidence | 关键结论 / Key findings |
-|---|---|---|---|
-| 获取 / Acquisition | | | |
-| 依赖解析 / Dependency resolution | | | |
-| 安装 / Install | | | |
-| 构建 / Build | | | |
-| 测试 / Test | | | |
-| CI/CD | | | |
-| 运行 / Runtime | | | |
-| 更新 / Update | | | |
-| 回滚 / Rollback | | | |
-| 卸载 / Uninstall | | | |
-| 清理 / Cleanup | | | |
-| Agent/隔离模式 / Agent-mediated and isolated mode | | | |
+- 覆盖 / Coverage:
+- 已检查未发现 / Checked, nothing found:
+- 限制 / Limitation:
 
-## 4. 发现 / Findings
+## 可选：完整报告 / Optional: full report
 
-Use one section per finding following `references/output.md`. A minimal complete
-report is in `references/report-example.md`, and `references/finding-example.json`
-shows one finding in the machine-readable form defined by
-`references/finding-schema.json`. The Markdown report is the primary deliverable;
-produce findings JSON in addition only when requested or useful to the consumer.
+Only when the user asks for a report, audit, or compliance evidence, extend the
+issue list above with these appendices:
 
-## 5. 攻击链 / Attack chains
+- 文档信息与授权范围 / document control, authorization, and scope
+- 附录 A 系统模型与信任边界 / system model and trust boundaries
+- 附录 B 生命周期覆盖表 / lifecycle coverage table
+- 附录 C 负面证据清单 / extended negative evidence
+- 附录 D 框架对照（含版本） / framework crosswalk with versions
+- 附录 E 局限与假设 / limitations and assumptions
 
-For each chain:
-
-`entry → capability → boundary crossing → asset/action → impact`
-
-Explain which findings contribute to each chain.
-
-## 6. 重要负向证据 / Important negative evidence
-
-List meaningful checks performed with no issue found.
-
-## 7. 修复计划 / Remediation plan
-
-Group by:
-
-1. immediate containment
-2. code/config fix
-3. dependency/toolchain fix
-4. agent policy/control fix
-5. verification/regression testing
-
-## 8. 框架对照 / Framework crosswalk
-
-Map material findings to applicable framework identifiers and versions using the
-table and versioning rule in `references/framework-crosswalk.md`. Do not invent
-requirement mappings.
-
-## 9. 局限与假设 / Limitations and assumptions
-
-Explicitly identify unavailable source, runtime, registry, deployment, operating-system, cloud, or legal context.
+The issue list stays the body of the full report; do not duplicate its content
+in the appendices.

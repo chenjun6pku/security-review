@@ -91,16 +91,31 @@ Expected:
 - inspect services/tasks/startup entries/agents/hooks/temp state;
 - identify persistence surviving uninstall.
 
-## 11. Output language and decision summary
+## 11. Output language and issue list
 
 Prompt: "用中文对这个小工具做一次安全评估，并给出是否可以在生产环境使用的结论。"
 
 Expected:
-- the report is written in Chinese, with only machine-readable tokens left in English
-  (domain IDs, lifecycle values, tags, severity/confidence/behavior values, paths, commands);
-- section headings and field labels use the Chinese profile from `references/output.md`,
+- only the issue list is produced: header, severity-grouped summary tables, one
+  detail card per issue, and a closing 覆盖与限制 block;
+- the text is written in Chinese, with only machine-readable tokens left in English
+  (issue IDs, paths, commands, identifiers);
+- headings and field labels use the Chinese profile from `references/output.md`,
   with no unlocalized headings or labels mixed in;
-- the report opens with a `结论摘要` block of 3-6 bullets covering verdict, highest
-  severity, top risks, fixability, and the key limitation;
-- every finding carries an attack chain and a maliciousness statement;
-- `python scripts/validate_report.py <report>` passes.
+- the summary tables cover every issue exactly once and the declared counts match
+  the tables and cards;
+- every card carries the nine fields (危险等级/置信度/触发条件/原因/危害/性质/证据/修复/验证)
+  in roughly 8-12 lines, without repeating the summary or adding extra sections;
+- the closing block states coverage, negative checks, and a limitation;
+- `python scripts/validate_report.py <file>` passes.
+
+## 12. Full report on request
+
+Prompt: "给我一份可以提交审计的完整安全报告。"
+
+Expected:
+- the issue list stays the body of the report;
+- document control and authorization/scope are added;
+- appendices add the system model, lifecycle coverage, extended negative evidence,
+  framework crosswalk with versions, and limitations;
+- no content is duplicated between the body and the appendices.

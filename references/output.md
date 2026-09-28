@@ -1,129 +1,128 @@
 # Output Contract
 
-## Decision summary (TL;DR)
-
-Every report opens, before the numbered sections, with a localized decision
-summary of 3-6 single-line bullets and no numeric score:
-
-- **结论 / Verdict**: is the project safe to adopt, install, or deploy, and under which conditions;
-- **最高严重度 / Highest severity**: highest severity plus finding counts per severity;
-- **关键风险 / Top risks**: the one to three material findings, with their IDs;
-- **可修复性 / Fixability**: what is fixable in code/config versus what needs design, protocol, or process change;
-- **主要限制 / Key limitation**: the single most important blind spot.
-
-A decision verdict is expected; an overall security score is not.
+The default deliverable is a **security issue list** (问题清单): a short summary
+table per severity group followed by one detail card per issue. A full report
+with methodology appendices is opt-in and only produced when the user asks for a
+report, audit, or compliance mapping.
 
 ## Output language
 
-Write every human-readable part of the report in the language of the user's
-request (default: the language they wrote in). Keep machine-readable tokens in
-canonical English:
+Write every human-readable part in the language of the user's request (default:
+the language they wrote in). Keep machine-readable tokens in canonical English:
 
-- domain IDs (`SR-XX`), lifecycle values, tags, and `severity` / `confidence` / `behavior` values;
-- JSON field names defined by `references/finding-schema.json`;
-- file paths, symbols, commands, and framework identifiers such as `CWE-125` or `SLSA-1.2`.
+- issue IDs (`SR-0001`), lifecycle values, tags, and JSON field names from `references/finding-schema.json`;
+- file paths, symbols, commands, and standard identifiers such as `CWE-125` or `SLSA-1.2`.
 
 Localize section headings and field labels with the terminology table below and
-use exactly one language profile per report. English evidence inside a localized
-report (paths, code, quoted output) does not count as mixing; unlocalized
-headings or field labels do.
+use exactly one language profile per output. English evidence inside a localized
+list (paths, code, identifiers) does not count as mixing; unlocalized headings
+or field labels do.
 
 ## Terminology
 
 | Canonical (English) | 中文标签 |
 |---|---|
-| Decision summary (TL;DR) | 结论摘要（TL;DR） |
-| Executive summary | 执行摘要 |
-| System model | 系统模型 |
-| Lifecycle coverage | 生命周期覆盖 |
-| Findings | 发现 |
-| Attack chains | 攻击链 |
-| Important negative evidence | 重要负向证据 |
-| Remediation plan | 修复计划 |
-| Framework crosswalk | 框架对照 |
-| Limitations and assumptions | 局限与假设 |
-| Severity / Confidence / Behavior | 严重度 / 置信度 / 行为分类 |
-| Primary domain / Lifecycle / Tags / Affected | 主域 / 生命周期 / 标签 / 受影响位置 |
-| Risk / Evidence | 风险 / 证据 |
-| Trigger and reachability / Impact | 触发与可达性 / 影响 |
-| Attack chain / Why this is or is not malicious | 攻击链 / 恶意性判断 |
-| Remediation / Validation | 修复建议 / 验证方法 |
+| Security issue list | 安全问题清单 |
+| Target / Review mode | 审查对象 / 审查方式 |
+| Verdict / Summary counts | 结论 / 统计 |
+| ID / Issue / Possible consequence | 编号 / 问题 / 可能导致 |
+| Issue details | 问题详情 |
+| Issue N (SR-0001) | 问题 N（SR-0001） |
+| Coverage and limitations | 覆盖与限制 |
+| Risk level / Confidence | 危险等级 / 置信度 |
+| Trigger / Root cause / Impact / Nature | 触发条件 / 原因 / 危害 / 性质 |
+| Evidence / Fix / Verification | 证据 / 修复 / 验证 |
+| Attack chain (optional) | 攻击链（可选） |
 
-## Finding format
+Severity labels are localized in the list (`高` / `中` / `低` / `信息`) but keep
+the canonical English value in JSON output (`High` / `Medium` / `Low` /
+`Informational`).
 
-Chinese profile (use the canonical English labels unchanged for an English
-report). Field values keep their canonical enum tokens; a short parenthetical
-qualifier may follow the token.
+## Issue list structure
 
 ```markdown
-### [SR-0001] 标题
+# <项目> 安全问题清单
 
-- 严重度：High
-- 置信度：High
-- 行为分类：reachable_security_behavior
-- 主域：SR-SC
-- 生命周期：install, runtime
-- 标签：execution, credential-access, exfiltration
-- 受影响位置：path/to/file:line
+- 审查对象：<repo> @ <commit>（版本 <x.y>）
+- 审查方式：<静态只读 / 静态 + 隔离动态>
+- 结论：<one-line decision verdict>
+- 统计：高危 N / 中危 N / 低危 N / 信息 N（共 N 项）
 
-### 风险
-<One concise technical statement describing what can happen and to whom/what.>
+## 高危（N）
 
-### 证据
-- `path/to/file:line`: <relevant mechanism>
-- <configuration/dependency/runtime evidence>
+| 编号 | 问题 | 可能导致 |
+|---|---|---|
+| SR-0001 | <issue in one phrase> | <consequence + precondition> |
 
-### 触发与可达性
-<How the path is reached; required user/attacker action; privilege and preconditions.>
+## 中危（N）
 
-### 影响
-<Confidentiality / Integrity / Availability / identity / host / cloud impact and blast radius.>
+| 编号 | 问题 | 可能导致 |
+|---|---|---|
+...
 
-### 攻击链
-`entry → capability → boundary → asset/action → impact`
+## 低危 / 信息（N）
 
-### 恶意性判断
-<Describe observed or inferred behavior without guessing intent.>
+| 编号 | 问题 | 可能导致 |
+|---|---|---|
+...
 
-### 修复建议
-<Concrete code/config/process change.>
+## 问题详情
 
-### 验证方法
-<How to verify the fix without exposing secrets or causing harmful side effects.>
+### 问题 1（SR-0001）：<title>
+
+- 危险等级：高
+- 置信度：高
+- 触发条件：<who can trigger it, and with which preconditions>
+- 原因：<root cause with the code mechanism>
+- 危害：<technical + business impact and blast radius>
+- 性质：<implementation flaw / design flaw / capability; state whether malicious behavior is evidenced>
+- 证据：`path/to/file:line`、`path/to/file:line`
+- 修复：<concrete change>
+- 验证：<how to confirm the fix without harmful side effects>
+
+## 覆盖与限制
+
+- 覆盖：<phases reviewed; phases that do not exist>
+- 已检查未发现：<meaningful negative checks>
+- 限制：<what could not be verified and why; mandatory>
 ```
 
-Finding IDs are sequential per report in `SR-0001` form. `生命周期` lists every
-applicable phase with the primary phase first, and the remaining fields mirror
-`references/finding-schema.json`.
+## Summary table rules
 
-The Markdown report is the primary deliverable. When a machine-readable artifact
-is requested or useful, also emit the findings as a JSON array that conforms to
-`references/finding-schema.json`; `references/finding-example.json` shows one
-complete finding. JSON keeps the canonical English field names regardless of the
-report language.
+- Every issue appears exactly once, in the severity group that matches its card; the ID column uses the stable `SR-0001` form.
+- One line per cell and roughly 40 characters or fewer. The "可能导致" cell states the consequence plus the precondition (remote/local, authentication required).
+- No CWE IDs, function names, line numbers, or standard clause numbers in the summary tables; those belong to the detail card.
 
-Run `python scripts/validate_report.py <report.md>` before delivering a report
-written to a file; it enforces the structure, the single language profile, and
-the enum values described here.
+## Detail card rules
 
-## Severity ordering
+- One card per issue, ordered by severity, in the same order as the summary tables.
+- Keep each card to roughly 8-12 lines; merge any extra prose into the nine fields instead of adding new sections.
+- `证据` keeps `file:line` references; secrets and personal data are never reproduced.
+- Add an optional `- 攻击链：` line only when the path crosses components or findings.
 
-Within the report, order by severity then confidence then blast radius, but do not create a score or ranking of options.
+## Coverage and limitations rules
 
-## “Not found” section
+- End every list with a `覆盖与限制` block of 3-5 bullets: coverage, negative
+  checks, and limitations. The limitation bullet is mandatory, because a static
+  review must not read as proof of exploitability.
+- Record lifecycle coverage at the phase level only; per-phase evidence tables
+  belong to the optional full report.
 
-Include only meaningful negative checks, for example:
+## Machine-readable output
 
-- no automatic persistence discovered in common OS mechanisms;
-- no outbound telemetry destination found after inspecting network clients;
-- release integrity verification is present;
-- container has no host Docker socket mount.
+When a machine-readable artifact is requested or useful, emit the findings as a
+JSON array that conforms to `references/finding-schema.json`;
+`references/finding-example.json` shows one complete finding. JSON keeps the
+canonical English field names and enum values regardless of the output language.
 
-## Limitations
+Run `python scripts/validate_report.py <file.md>` before delivering a file; it
+enforces the structure, the single language profile, the summary/detail
+consistency, and the enum values described here.
 
-Always list unavailable evidence and scope gaps. Examples:
+## Optional full report
 
-- external package registry history not available;
-- runtime execution not authorized;
-- Windows-specific installer not reviewed on Linux;
-- cloud deployment configuration absent from repository.
+Produce the extended structure only when the user asks for a report, audit, or
+compliance evidence: document control, authorization and scope, executive
+summary, system model, lifecycle coverage table, negative evidence, remediation
+roadmap, framework crosswalk with versions, and limitations. The issue list
+above stays the body of that report; the extra sections become appendices.
