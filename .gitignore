@@ -4,3 +4,6 @@ __pycache__/
 
 # Windows / WSL download metadata (illegal filenames on NTFS checkouts)
 *:Zone.Identifier
+
+# Local test material: example reports are produced ad hoc and are not published
+/example/

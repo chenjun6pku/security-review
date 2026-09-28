@@ -5,7 +5,7 @@
 - Added an output language policy: human-readable report text follows the user's language, machine-readable tokens stay canonical English, and a report must use exactly one language profile. The terminology table lives in `references/output.md`.
 - Every report now opens with a localized decision summary (TL;DR) of 3-6 bullets: verdict, highest severity, top risks, fixability, and the key limitation. A decision verdict is expected; a numeric score is still forbidden.
 - Both contract files were localized: `references/output.md` carries the bilingual finding template, and `references/report-template.md` shows the summary block plus bilingual section and table headings.
-- Added `scripts/validate_report.py`, which enforces the single language profile, the summary block, the nine report sections, sequential finding IDs, required finding sections, and canonical enum values. CI now validates `references/report-example.md` and the full example report.
+- Added `scripts/validate_report.py`, which enforces the single language profile, the summary block, the nine report sections, sequential finding IDs, required finding sections, and canonical enum values. CI validates `references/report-example.md`; full reports produced for local testing are not tracked.
 - `references/report-example.md` now conforms to the contract, including the decision summary, the maliciousness section, and the `### [SR-0001]` finding heading.
 - Added validation scenario 11 for language, decision summary, and per-finding completeness.
 
